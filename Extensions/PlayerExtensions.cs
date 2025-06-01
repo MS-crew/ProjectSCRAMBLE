@@ -61,7 +61,7 @@ namespace ProjectSCRAMBLE.Extensions
 
             if (!ObjectSpawner.TrySpawnSchematic(Plugin.Instance.Config.CensorSchematic, Head.position, Head.rotation, Plugin.Instance.Config.CensorSchematicScale , out SchematicObject Censor))
             {
-                Log.Debug("Censor Schematic failed to spawn");
+                Log.Error("Censor Schematic failed to spawn");
                 return;
             }
 
