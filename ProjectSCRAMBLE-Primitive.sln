@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSCRAMBLE", "ProjectSCRAMBLE.csproj", "{72C76A37-3592-48AB-B97D-8EC800B209A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSCRAMBLE-Primitive", "ProjectSCRAMBLE-Primitive.csproj", "{72C76A37-3592-48AB-B97D-8EC800B209A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
