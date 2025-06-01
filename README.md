@@ -1,7 +1,7 @@
 <h1 align="center">Project SCRAMBLE</h1>
 <div align="center">
 <a href="https://github.com/MS-crew/ProjectSCRAMBLE/releases"><img src="https://img.shields.io/github/downloads/MS-crew/ProjectSCRAMBLE/total?style=for-the-badge&logo=githubactions&label=Downloads" href="https://github.com/MS-crew/ProjectSCRAMBLE/releases" alt="GitHub Release Download"></a>
-<a href="https://github.com/MS-crew/ProjectSCRAMBLE/releases"><img src="https://img.shields.io/badge/Build-1.0.0-brightgreen?style=for-the-badge&logo=gitbook" href="https://github.com/MS-crew/ProjectSCRAMBLE/releases" alt="GitHub Releases"></a>
+<a href="https://github.com/MS-crew/ProjectSCRAMBLE/releases"><img src="https://img.shields.io/badge/Build-1.2.0-brightgreen?style=for-the-badge&logo=gitbook" href="https://github.com/MS-crew/ProjectSCRAMBLE/releases" alt="GitHub Releases"></a>
 <a href="https://github.com/MS-crew/ProjectSCRAMBLE/blob/master/LICENSE.txt"><img src="https://img.shields.io/badge/Licence-GPL_3.0-blue?style=for-the-badge&logo=gitbook" href="https://github.com/MS-crew/ProjectSCRAMBLE/blob/master/LICENSE.txt" alt="General Public License v3.0"></a>
 <a href="https://github.com/ExMod-Team/EXILED"><img src="https://img.shields.io/badge/Exiled-9.6.0-red?style=for-the-badge&logo=gitbook" href="https://github.com/ExMod-Team/EXILED" alt="GitHub Exiled"></a>
 
@@ -18,8 +18,17 @@ Project SCRAMBLE was a project conducted by the SCP Foundation that aimed to cre
 5. Restart your server to apply the changes.
 6. Configure the plugin according to your server’s needs using the provided settings.
 
+## Installation For Primitive Version
+
+1. Download the release file from the GitHub page [here](https://github.com/MS-crew/ProjectSCRAMBLE/releases).
+2. Extract the contents into your `\AppData\Roaming\EXILED\Plugins` directory.
+3. Restart your server to apply the changes.
+4. Configure the plugin according to your server’s needs using the provided settings.
+
 ## Dependicies
 - ProjectMER [here](https://github.com/Michal78900/ProjectMER)
+- HintServiceMeow [here](https://github.com/MeowServer/HintServiceMeow)
+## Dependicies For Primitive Version
 - HintServiceMeow [here](https://github.com/MeowServer/HintServiceMeow)
 ## Feedback and Issues
 
