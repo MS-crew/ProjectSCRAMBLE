@@ -1,21 +1,20 @@
 ﻿using MEC;
 using UnityEngine;
 using Exiled.API.Features;
-using ProjectMER.Features.Objects;
+using Exiled.API.Features.Toys;
 
 namespace ProjectSCRAMBLE.Extensions
 {
     public static class SchematicExtensions
     {
-        public static void AttachToTransform(this SchematicObject Censor, Transform Head)
+        public static void AttachToTransform(this Primitive Censor, Transform Head)
         {
-            foreach (var i in Censor.AdminToyBases)
-                i.syncInterval = 0;
+            Censor.AdminToyBase.syncInterval = 0;
 
-            Timing.RunCoroutine(Methods.TrackHead(Censor.transform, Head));
+            Timing.RunCoroutine(Methods.TrackHead(Censor.Transform, Head));
         }
 
-        public static void RemoveForUnGlassesPlayer(this SchematicObject Schematic, Player SchematicOwner)
+        public static void RemoveForUnGlassesPlayer(this Primitive Censor, Player SchematicOwner)
         {
             foreach (Player normalply in Player.List)
             {
@@ -25,7 +24,7 @@ namespace ProjectSCRAMBLE.Extensions
                 }
                 else
                 {
-                    normalply.DestroySchematic(Schematic);
+                    normalply.DestroyCensor(Censor);
                 }
             }
         }

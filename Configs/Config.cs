@@ -33,11 +33,14 @@ namespace ProjectSCRAMBLE
         [Description("0.1 is okey, 0.01 better/good , 0.001 greater")]
         public float AttachToHeadsyncInterval { get; set; } = 0.01f;
 
-        [Description("Censor schematic name")]
-        public string CensorSchematic { get; set; } = "Censormain";
+        [Description("Censor rotate speed")]
+        public float Censorspeed { get; set; } = 250f;
 
-        [Description("Censor schematic scale")]
-        public Vector3 CensorSchematicScale { get; set; } = new Vector3(0.5f, 0.5f , 0.5f);
+        [Description("Censor Movement Smooth value")]
+        public byte CensorMovementSmooth { get; set; } = 30;
+
+        [Description("Censor scale")]
+        public Vector3 CensorScale { get; set; } = new Vector3(0.5f, 0.5f , 0.5f);
 
         [Description("Wearing time (default 5)")]
         public float ActivateTime { get; set; } = 1f;

@@ -6,11 +6,11 @@ using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Extensions;
 using ProjectSCRAMBLE.Extensions;
-using ProjectMER.Features.Objects;
 using Exiled.Events.EventArgs.Player;
 using Exiled.Events.EventArgs.Scp096;
 using Scp96Event = Exiled.Events.Handlers.Scp096;
 using PlayerEvent = Exiled.Events.Handlers.Player;
+using Exiled.API.Features.Toys;
 
 namespace ProjectSCRAMBLE
 {
@@ -126,25 +126,23 @@ namespace ProjectSCRAMBLE
 
         private void OnChangeEffect(ReceivingEffectEventArgs ev)
         {
+            if (ev.Effect.GetEffectType() != EffectType.Scp1344 || !ev.Effect.IsEnabled)
+                return;
+
+            ev.Player.RemoveSCRAMBLEHint();
+
             if (!ProjectSCRAMBLE.ActiveScramblePlayers.ContainsKey(ev.Player))
                 return;
-
-            if (ev.Effect.GetEffectType() != EffectType.Scp1344)
-                return;
             
-            if (!ev.Effect.IsEnabled)
-                return;
-
             ev.Player.DeObfuscateScp96s();
-            ev.Player.RemoveSCRAMBLEHint();
             Log.Debug("Player wear-off Project SCRAMBLE");
         }
 
         public void OnVerified(VerifiedEventArgs ev)
         {
-            foreach (SchematicObject schmt in PlayerExtensions.Scp96sCencors.Values)
+            foreach (Primitive Censormain in PlayerExtensions.Scp96sCencors.Values)
             {
-                ev.Player.DestroySchematic(schmt);
+                ev.Player.DestroyCensor(Censormain);
             }
         }
     }

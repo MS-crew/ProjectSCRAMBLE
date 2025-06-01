@@ -23,7 +23,7 @@ namespace ProjectSCRAMBLE.Commands
 
             IEnumerable<string> lines = PlayerExtensions.Scp96sCencors.Select(data =>
             {
-                string schematicName = data.Value?.name ?? "null";
+                string schematicName = data.Value?.GameObject?.name ?? "null";
                 return $"{data.Key.Nickname} -> {schematicName}";
             });
 

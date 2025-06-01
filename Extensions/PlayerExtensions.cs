@@ -3,12 +3,12 @@ using UnityEngine;
 using PlayerRoles;
 using Exiled.API.Enums;
 using Utils.NonAllocLINQ;
-using ProjectMER.Features;
 using CustomPlayerEffects;
 using Exiled.API.Features;
 using Exiled.API.Extensions;
+using Exiled.API.Features.Toys;
+using ProjectSCRAMBLE.Components;
 using System.Collections.Generic;
-using ProjectMER.Features.Objects;
 using PlayerRoles.FirstPersonControl;
 using HintServiceMeow.Core.Utilities;
 using HintServiceMeow.Core.Extension;
@@ -19,14 +19,14 @@ namespace ProjectSCRAMBLE.Extensions
 {
     public static class PlayerExtensions
     {
-        public static Dictionary<Player, SchematicObject> Scp96sCencors = [];
+        public static Dictionary<Player, Primitive> Scp96sCencors = [];
 
         public static void AddSCRAMBLEHint(this Player player, string text)
         {
             player.RemoveSCRAMBLEHint();
             HintServiceMeow.Core.Models.Hints.Hint newHint = new()
             {
-                Id = player.Id + "SCRAMBLE",
+                Id = "SCRAMBLE",
                 YCoordinate = Plugin.Instance.Config.Hint.YCordinate,
                 XCoordinate = Plugin.Instance.Config.Hint.XCordinate,
                 FontSize = Plugin.Instance.Config.Hint.FontSize,
@@ -40,8 +40,8 @@ namespace ProjectSCRAMBLE.Extensions
         public static void RemoveSCRAMBLEHint(this Player player)
         {
             PlayerDisplay pd = player.GetPlayerDisplay();
-            if (pd.GetHint(player.Id + "SCRAMBLE") != null)
-                pd.RemoveHint(player.Id + "SCRAMBLE");
+            if (pd.GetHint("SCRAMBLE") != null)
+                pd.RemoveHint("SCRAMBLE");
         }
 
         public static void AddCensor(this Player player)
@@ -59,21 +59,38 @@ namespace ProjectSCRAMBLE.Extensions
             if (Scp96sCencors.ContainsKey(player))
                 player.RemoveCensor();
 
-            if (!ObjectSpawner.TrySpawnSchematic(Plugin.Instance.Config.CensorSchematic, Head.position, Head.rotation, Plugin.Instance.Config.CensorSchematicScale , out SchematicObject Censor))
+            Primitive Censormmain = Primitive.Create(Head.position, Head.rotation.eulerAngles, spawn: true );
+
+            Censormmain.Visible = Censormmain.Collidable = false;
+
+            for (int i = 0; i < 4; i++)
             {
-                Log.Debug("Censor Schematic failed to spawn");
-                return;
+                Primitive cube = Primitive.Create(
+                    primitiveType: PrimitiveType.Cube,
+                    position: Head.position,
+                    rotation: Head.rotation.eulerAngles,
+                    scale: Plugin.Instance.Config.CensorScale,
+                    spawn: true,
+                    color: Color.black);
+
+                cube.Transform.parent = Censormmain.Transform;
+
+                cube.Visible = true;
+                cube.Collidable = false;
+                
+                cube.MovementSmoothing = Plugin.Instance.Config.CensorMovementSmooth;
+                cube.GameObject.AddComponent<Rotator>().Initialize((Axis)i);
             }
 
-            Censor.transform.parent = player.Transform;
+            Censormmain.Transform.parent = player.Transform;
 
             if (Plugin.Instance.Config.AttachCensorToHead)
             {
-                Censor.AttachToTransform(Head);
+                Censormmain.AttachToTransform(Head);
             }
 
-            Scp96sCencors.Add(player, Censor);
-            Censor.RemoveForUnGlassesPlayer(player);
+            Scp96sCencors.Add(player, Censormmain);
+            Censormmain.RemoveForUnGlassesPlayer(player);
         }
 
         public static void RemoveCensor(this Player player)
@@ -81,8 +98,8 @@ namespace ProjectSCRAMBLE.Extensions
             if (!Scp96sCencors.ContainsKey(player))
                 return;
 
-            SchematicObject Censor = Scp96sCencors[player];
-            NetworkServer.Destroy(Censor.gameObject);
+            Primitive Censor = Scp96sCencors[player];
+            NetworkServer.Destroy(Censor.GameObject);
 
             Scp96sCencors.Remove(player);
 
@@ -99,7 +116,7 @@ namespace ProjectSCRAMBLE.Extensions
         {
             foreach (Player ply in Scp96sCencors.Keys)
             {
-                player.SpawnSchematic(Scp96sCencors[ply]);
+                player.SpawnCensor(Scp96sCencors[ply]);
                 ProjectSCRAMBLE.ActiveScramblePlayers[player].AddIfNotContains(ply);
             }
         }
@@ -118,7 +135,7 @@ namespace ProjectSCRAMBLE.Extensions
                     continue;
 
                 Log.Debug($"{ply.Nickname} Obfuscate destroying for {player.Nickname} ");
-                player.DestroySchematic(Scp96sCencors[ply]);
+                player.DestroyCensor(Scp96sCencors[ply]);
             }
 
             ProjectSCRAMBLE.ActiveScramblePlayers.Remove(player);
@@ -142,17 +159,17 @@ namespace ProjectSCRAMBLE.Extensions
             return anima.Head;
         }
 
-        public static void SpawnSchematic(this Player player, SchematicObject schematic)
+        public static void SpawnCensor(this Player player, Primitive Censormain)
         {
-            foreach (NetworkIdentity networkIdentity in schematic.NetworkIdentities)
+            foreach (NetworkIdentity networkIdentity in Censormain.GameObject.GetComponentsInChildren<NetworkIdentity>())
             {
                 Server.SendSpawnMessage.Invoke(null, [networkIdentity, player.Connection]);
             }
         }
 
-        public static void DestroySchematic(this Player player, SchematicObject schematic)
+        public static void DestroyCensor(this Player player, Primitive Censormain)
         {
-            foreach (NetworkIdentity networkIdentity in schematic.NetworkIdentities)
+            foreach (NetworkIdentity networkIdentity in Censormain.GameObject.GetComponentsInChildren<NetworkIdentity>())
             {
                 player.Connection.Send(new ObjectDestroyMessage
                 {

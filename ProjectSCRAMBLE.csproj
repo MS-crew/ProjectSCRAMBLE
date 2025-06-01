@@ -50,9 +50,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(EXILED_REFERENCES)\Pooling.dll</HintPath>
     </Reference>
-    <Reference Include="ProjectMER">
-      <HintPath>$(EXILED_REFERENCES)\ProjectMER.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -61,6 +58,12 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\EXILED_REFERENCES\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>..\..\..\EXILED_REFERENCES\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(EXILED_REFERENCES)\UnityEngine.CoreModule.dll</HintPath>
@@ -73,6 +76,7 @@
   <ItemGroup>
     <Compile Include="Commands\CensorsInfo.cs" />
     <Compile Include="Commands\ScramblesInfo.cs" />
+    <Compile Include="Components\Rotator.cs" />
     <Compile Include="Configs\Config.cs" />
     <Compile Include="EventHandlers.cs" />
     <Compile Include="Extensions\FloatExtension.cs" />
