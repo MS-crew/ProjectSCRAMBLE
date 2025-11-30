@@ -51,7 +51,6 @@ namespace ProjectSCRAMBLE.Extensions
 #if RUEI
             RueDisplay.Get(player).Show(scrambleHintTag, new BasicElement(Plugin.Instance.Config.Hint.YCordinate, text));
 #elif HSM
-            player.RemoveSCRAMBLEHint();
             HintServiceMeow.Core.Models.Hints.Hint newHint = new()
             {
                 Id = hsmID,
@@ -143,12 +142,10 @@ namespace ProjectSCRAMBLE.Extensions
 
         public static void ObfuscateScp96s(this Player player)
         {
-            Dictionary<Player, List<Player>> activeScramblePlayers = ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers;
-
             foreach (KeyValuePair<Player, GameObject> censor in Scp96Censors)
             {
                 player.ShowHidedNetworkObject(censor.Value);
-                activeScramblePlayers[player].AddIfNotContains(censor.Key);
+                ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers[player].AddIfNotContains(censor.Key);
             }
         }
 
@@ -179,7 +176,7 @@ namespace ProjectSCRAMBLE.Extensions
             }
 
             headTransform = scp96AnimatedCharacterModel.Head;
-            return scp96AnimatedCharacterModel.Head != null;
+            return headTransform != null;
         }
 
         public static void ShowHidedNetworkObject(this Player player, GameObject networkedObject)
