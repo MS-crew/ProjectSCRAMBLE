@@ -13,8 +13,6 @@ using Exiled.Events.EventArgs.Scp096;
 
 using Scp96Event = Exiled.Events.Handlers.Scp096;
 using PlayerEvent = Exiled.Events.Handlers.Player;
-using Scp914Event = Exiled.Events.Handlers.Scp914;
-using Exiled.Events.EventArgs.Scp914;
 
 #if PMER
 using ProjectMER.Features.Objects;
