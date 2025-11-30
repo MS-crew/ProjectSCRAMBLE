@@ -91,26 +91,23 @@ namespace ProjectSCRAMBLE.Extensions
             if (Scp96Censors.ContainsKey(player))
                 player.RemoveCensor();
 
+            Config config = Plugin.Instance.Config;
 #if PMER
-            if (!ObjectSpawner.TrySpawnSchematic(Plugin.Instance.Config.CensorSchematic, head.position, head.rotation, 
-                Plugin.Instance.Config.CensorScale , out SchematicObject Censor))
+            if (!ObjectSpawner.TrySpawnSchematic(config.CensorSchematic, head.position, head.rotation, 
+                config.CensorScale , out SchematicObject Censor))
             {
                 Log.Error("Censor Schematic failed to spawn");
                 return;
             }
 
-            Censor.transform.parent = player.Transform;
+            Censor.transform.SetParent(player.Transform, false);
 
-            if (Plugin.Instance.Config.AttachCensorToHead)
-            {
+            if (config.AttachCensorToHead)
                 Censor.transform.AttachToTransform(head);
-            }
 
             Scp96Censors.Add(player, Censor.gameObject);
             Censor.gameObject.HideForUnGlassesPlayer(player);
 #else
-            Config config = Plugin.Instance.Config;
-
             Primitive Censor = Primitive.Create(primitiveType: PrimitiveType.Cube, flags: PrimitiveFlags.Visible, position: head.position,
                 rotation: head.rotation.eulerAngles, scale: config.CensorScale, spawn: true, color: config.CensorColor);
 
@@ -194,6 +191,12 @@ namespace ProjectSCRAMBLE.Extensions
             }
 
             Server.SendSpawnMessage.Invoke(null, [identity, player.Connection]);
+#if PMER
+            foreach (NetworkIdentity netIdentity in networkedObject.GetComponentsInChildren<NetworkIdentity>(true))
+            {
+                Server.SendSpawnMessage.Invoke(null, [netIdentity, player.Connection]);
+            }
+#endif
         }
 
         public static void HideNetworkObject(this Player player, GameObject networkedObject)
