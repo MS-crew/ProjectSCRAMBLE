@@ -1,20 +1,32 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11222.16 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSCRAMBLE", "ProjectSCRAMBLE.csproj", "{72C76A37-3592-48AB-B97D-8EC800B209A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Hsm|x64 = Hsm|x64
+		Hsm-Pmer|x64 = Hsm-Pmer|x64
 		Release|x64 = Release|x64
+		Ruei|x64 = Ruei|x64
+		Ruei-Pmer|x64 = Ruei-Pmer|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Debug|x64.ActiveCfg = Debug|x64
 		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Debug|x64.Build.0 = Debug|x64
+		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Hsm|x64.ActiveCfg = Hsm|x64
+		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Hsm|x64.Build.0 = Hsm|x64
+		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Hsm-Pmer|x64.ActiveCfg = Hsm-Pmer|x64
+		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Hsm-Pmer|x64.Build.0 = Hsm-Pmer|x64
 		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Release|x64.ActiveCfg = Release|x64
 		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Release|x64.Build.0 = Release|x64
+		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Ruei|x64.ActiveCfg = Ruei|x64
+		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Ruei|x64.Build.0 = Ruei|x64
+		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Ruei-Pmer|x64.ActiveCfg = Ruei-Pmer|x64
+		{72C76A37-3592-48AB-B97D-8EC800B209A7}.Ruei-Pmer|x64.Build.0 = Ruei-Pmer|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

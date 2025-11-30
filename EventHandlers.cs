@@ -1,38 +1,47 @@
-﻿using MEC;
+﻿using System.Linq;
+
+using MEC;
 using UnityEngine;
 using PlayerRoles;
-using System.Linq;
+using ProjectSCRAMBLE.Extensions;
+
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Extensions;
-using ProjectSCRAMBLE.Extensions;
-using ProjectMER.Features.Objects;
 using Exiled.Events.EventArgs.Player;
 using Exiled.Events.EventArgs.Scp096;
+
 using Scp96Event = Exiled.Events.Handlers.Scp096;
 using PlayerEvent = Exiled.Events.Handlers.Player;
+using Scp914Event = Exiled.Events.Handlers.Scp914;
+using Exiled.Events.EventArgs.Scp914;
+
+#if PMER
+using ProjectMER.Features.Objects;
+#endif
 
 namespace ProjectSCRAMBLE
 {
     public class EventHandlers
     {
-        public void Sucsribe()
+        public void Subscribe()
         {
             PlayerEvent.Verified += OnVerified;
             PlayerEvent.Spawned += OnChangedRole;
             PlayerEvent.ReceivingEffect += OnChangeEffect;
-            
+
             Scp96Event.AddingTarget += OnAddingTarget;
         }
 
-        public void UnSucsribe()
-        {
+        public void Unsubscribe()
+        {   
             PlayerEvent.Verified -= OnVerified;
             PlayerEvent.Spawned -= OnChangedRole;
             PlayerEvent.ReceivingEffect -= OnChangeEffect;
 
             Scp96Event.AddingTarget -= OnAddingTarget;
         }
+
 
         private void OnChangedRole(SpawnedEventArgs ev)
         {
@@ -46,23 +55,29 @@ namespace ProjectSCRAMBLE
             }
             else if (ev.Player.Role == RoleTypeId.Scp096)
             {
-                Timing.CallDelayed(0.5f, () => ev.Player.AddCensor());
+                Timing.CallDelayed(0.5f, ev.Player.AddCensor);
                 Log.Debug($"Scp96:{ev.Player.Nickname} added censor");
             }
         }
 
         public void OnAddingTarget(AddingTargetEventArgs ev)
         {
-            if (!ev.IsLooking || !ProjectSCRAMBLE.ActiveScramblePlayers.ContainsKey(ev.Target))
+            if (!ev.IsLooking)
                 return;
 
-            bool shouldRandomError = Plugin.Instance.Config.RandomError && Random.Range(0f, 100f) <= Plugin.Instance.Config.RandomErrorChance;
+            if (!ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.ContainsKey(ev.Target))
+                return;
 
-            if (!Plugin.Instance.Config.ScrambleCharge)
+            Config config = Plugin.Instance.Config;
+            Translation translation = Plugin.Instance.Translation;
+
+            bool shouldRandomError = config.RandomError && Random.Range(0f, 100f) <= config.RandomErrorChance;
+
+            if (!config.ScrambleCharge)
             {
                 if (shouldRandomError)
                 {
-                    ev.Target.AddSCRAMBLEHint(Plugin.Instance.Translation.Error);
+                    ev.Target.AddSCRAMBLEHint(translation.Error);
                     return;
                 }
 
@@ -71,7 +86,9 @@ namespace ProjectSCRAMBLE
             }
 
             ushort serial = 0;
-            foreach (var key in ev.Target.Inventory.UserInventory.Items.Keys)
+
+            var items = ev.Target.Inventory.UserInventory.Items.Keys;
+            foreach (ushort key in items)
             {
                 if (ProjectSCRAMBLE.SCRAMBLE.TrackedSerials.Contains(key))
                 {
@@ -96,31 +113,32 @@ namespace ProjectSCRAMBLE
                 return;
             }
 
-            if (!ProjectSCRAMBLE.ScrambleCharges.TryGetValue(serial, out float charge))
+            if (!ProjectSCRAMBLE.SCRAMBLE.ScrambleCharges.TryGetValue(serial, out float charge))
             {
-                ProjectSCRAMBLE.ScrambleCharges[serial] = 100f;
-                ev.Target.AddSCRAMBLEHint(Plugin.Instance.Translation.Charge.Replace("{charge}", charge.FormatCharge()));
+                charge = 100f;
+                ProjectSCRAMBLE.SCRAMBLE.ScrambleCharges[serial] = charge;
+                ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge()));
                 ev.IsAllowed = false;
                 return;
             }
 
             if (charge <= 0f)
             {
-                ev.Target.AddSCRAMBLEHint(Plugin.Instance.Translation.OffCharge);
+                ev.Target.AddSCRAMBLEHint(translation.OffCharge);
                 ev.Target.DeObfuscateScp96s();
                 return;
             }
 
-            ProjectSCRAMBLE.ScrambleCharges[serial] -= Time.deltaTime * Plugin.Instance.Config.ChargeUsageMultiplayer;
+            ProjectSCRAMBLE.SCRAMBLE.ScrambleCharges[serial] -= Time.deltaTime * config.ChargeUsageMultiplayer;
 
             if (shouldRandomError)
             {
-                ev.Target.AddSCRAMBLEHint(Plugin.Instance.Translation.Error);
-                Timing.CallDelayed(0.5f , () => ev.Target.AddSCRAMBLEHint(Plugin.Instance.Translation.Charge.Replace("{charge}", charge.FormatCharge())));
+                ev.Target.AddSCRAMBLEHint(translation.Error);
+                Timing.CallDelayed(0.5f , () => ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge())));
                 return;
             }
             
-            ev.Target.AddSCRAMBLEHint(Plugin.Instance.Translation.Charge.Replace("{charge}", charge.FormatCharge()));
+            ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge()));
             ev.IsAllowed = false;
         }
 
@@ -131,7 +149,7 @@ namespace ProjectSCRAMBLE
 
             ev.Player.RemoveSCRAMBLEHint();
 
-            if (!ProjectSCRAMBLE.ActiveScramblePlayers.ContainsKey(ev.Player))
+            if (!ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.ContainsKey(ev.Player))
                 return;
 
             ev.Player.DeObfuscateScp96s();
@@ -140,9 +158,9 @@ namespace ProjectSCRAMBLE
 
         public void OnVerified(VerifiedEventArgs ev)
         {
-            foreach (SchematicObject schmt in PlayerExtensions.Scp96sCencors.Values)
+            foreach (GameObject censor in PlayerExtensions.Scp96Censors.Values)
             {
-                ev.Player.DestroySchematic(schmt);
+                ev.Player.HideNetworkObject(censor);
             }
         }
     }

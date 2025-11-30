@@ -1,32 +1,60 @@
-﻿using Mirror;
-using UnityEngine;
-using PlayerRoles;
-using Exiled.API.Enums;
-using Utils.NonAllocLINQ;
-using ProjectMER.Features;
-using CustomPlayerEffects;
+﻿using System.Collections.Generic;
+
+using AdminToys;
+
 using Exiled.API.Features;
-using Exiled.API.Extensions;
-using System.Collections.Generic;
-using ProjectMER.Features.Objects;
-using PlayerRoles.FirstPersonControl;
-using HintServiceMeow.Core.Utilities;
-using HintServiceMeow.Core.Extension;
+using Exiled.API.Features.Roles;
+using Exiled.API.Features.Toys;
+
+using MEC;
+
+using Mirror;
+
+using PlayerRoles;
 using PlayerRoles.PlayableScps.Scp096;
-using PlayerRoles.FirstPersonControl.Thirdperson;
+
+using UnityEngine;
+
+using Utils.NonAllocLINQ;
+using System.Runtime.CompilerServices;
+
+
+#if RUEI
+using RueI.API;
+using RueI.API.Elements;
+#endif
+
+#if HSM
+using HintServiceMeow.Core.Extension;
+using HintServiceMeow.Core.Utilities;
+#endif
+
+#if PMER
+using ProjectMER.Features;
+using ProjectMER.Features.Objects;
+#endif
 
 namespace ProjectSCRAMBLE.Extensions
 {
     public static class PlayerExtensions
     {
-        public static Dictionary<Player, SchematicObject> Scp96sCencors = [];
+#if RUEI
+        private static readonly Tag scrambleHintTag = new("ProjectScramble");
+#elif HSM
+        private static readonly string hsmID = "SCRAMBLE";
+#endif
+
+        public static Dictionary<Player, GameObject> Scp96Censors = [];
 
         public static void AddSCRAMBLEHint(this Player player, string text)
         {
+#if RUEI
+            RueDisplay.Get(player).Show(scrambleHintTag, new BasicElement(Plugin.Instance.Config.Hint.YCordinate, text));
+#elif HSM
             player.RemoveSCRAMBLEHint();
             HintServiceMeow.Core.Models.Hints.Hint newHint = new()
             {
-                Id = "SCRAMBLE",
+                Id = hsmID,
                 YCoordinate = Plugin.Instance.Config.Hint.YCordinate,
                 XCoordinate = Plugin.Instance.Config.Hint.XCordinate,
                 FontSize = Plugin.Instance.Config.Hint.FontSize,
@@ -35,31 +63,37 @@ namespace ProjectSCRAMBLE.Extensions
             };
 
             player.AddHint(newHint);
+#endif
         }
 
         public static void RemoveSCRAMBLEHint(this Player player)
         {
+#if RUEI
+            RueDisplay.Get(player).Remove(scrambleHintTag);
+#elif HSM
             PlayerDisplay pd = player.GetPlayerDisplay();
-            if (pd.GetHint("SCRAMBLE") != null)
-                pd.RemoveHint("SCRAMBLE");
+            if (pd.GetHint(hsmID) != null)
+                pd.RemoveHint(hsmID);
+#endif
         }
 
         public static void AddCensor(this Player player)
         {
             if (player.Role.Type != RoleTypeId.Scp096)
                 return;
-
-            Transform Head = player.GetScp96Head();
-            if (Head == null)
+            
+            if (!player.TryGetScp96Head(out Transform head))
             {
-                Log.Debug("Scp096 head not found.");
+                Log.Error("Scp096 head not found.");
                 return;
             }
 
-            if (Scp96sCencors.ContainsKey(player))
+            if (Scp96Censors.ContainsKey(player))
                 player.RemoveCensor();
 
-            if (!ObjectSpawner.TrySpawnSchematic(Plugin.Instance.Config.CensorSchematic, Head.position, Head.rotation, Plugin.Instance.Config.CensorSchematicScale , out SchematicObject Censor))
+#if PMER
+            if (!ObjectSpawner.TrySpawnSchematic(Plugin.Instance.Config.CensorSchematic, head.position, head.rotation, 
+                Plugin.Instance.Config.CensorScale , out SchematicObject Censor))
             {
                 Log.Error("Censor Schematic failed to spawn");
                 return;
@@ -69,131 +103,108 @@ namespace ProjectSCRAMBLE.Extensions
 
             if (Plugin.Instance.Config.AttachCensorToHead)
             {
-                Censor.AttachToTransform(Head);
+                Censor.transform.AttachToTransform(head);
             }
 
-            Scp96sCencors.Add(player, Censor);
-            Censor.RemoveForUnGlassesPlayer(player);
+            Scp96Censors.Add(player, Censor.gameObject);
+            Censor.gameObject.HideForUnGlassesPlayer(player);
+#else
+            Config config = Plugin.Instance.Config;
+
+            Primitive Censor = Primitive.Create(primitiveType: PrimitiveType.Cube, flags: PrimitiveFlags.Visible, position: head.position,
+                rotation: head.rotation.eulerAngles, scale: config.CensorScale, spawn: true, color: config.CensorColor);
+
+            Censor.MovementSmoothing = 0;
+            Censor.Transform.SetParent(player.Transform, false);
+
+            if (config.AttachCensorToHead)
+                Censor.Transform.AttachToTransform(head);
+
+            if (config.CensorRotate)
+                Timing.RunCoroutine(Methods.RotateRandom(Censor.Transform));
+
+            Scp96Censors.Add(player, Censor.GameObject);
+            Censor.GameObject.HideForUnGlassesPlayer(player);
+#endif
         }
 
         public static void RemoveCensor(this Player player)
         {
-            if (!Scp96sCencors.ContainsKey(player))
+            if (!Scp96Censors.ContainsKey(player))
                 return;
 
-            SchematicObject Censor = Scp96sCencors[player];
-            NetworkServer.Destroy(Censor.gameObject);
+            GameObject Censor = Scp96Censors[player];
 
-            Scp96sCencors.Remove(player);
+            Scp96Censors.Remove(player);
+            NetworkServer.Destroy(Censor);
 
-            foreach (List<Player> ply in ProjectSCRAMBLE.ActiveScramblePlayers.Values)
+            foreach (List<Player> ply in ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.Values)
             {
-                if (!ply.Contains(player))
-                    continue;
-
                 ply.Remove(player);
             }
         }
 
         public static void ObfuscateScp96s(this Player player)
         {
-            foreach (Player ply in Scp96sCencors.Keys)
+            Dictionary<Player, List<Player>> activeScramblePlayers = ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers;
+
+            foreach (KeyValuePair<Player, GameObject> censor in Scp96Censors)
             {
-                player.SpawnSchematic(Scp96sCencors[ply]);
-                ProjectSCRAMBLE.ActiveScramblePlayers[player].AddIfNotContains(ply);
+                player.ShowHidedNetworkObject(censor.Value);
+                activeScramblePlayers[player].AddIfNotContains(censor.Key);
             }
         }
 
         public static void DeObfuscateScp96s(this Player player)
         {
-            if (!ProjectSCRAMBLE.ActiveScramblePlayers.ContainsKey(player))
+            foreach (GameObject censor in Scp96Censors.Values)
             {
-                Log.Debug("This Playerin not wearing Project SCRAMBLE");
+                player.HideNetworkObject(censor);
+            }
+
+            ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.Remove(player);
+        }
+
+        private static bool TryGetScp96Head(this Player player, out Transform headTransform)
+        {
+            headTransform = null;
+
+            if (player.Role is not FpcRole fpc)
+            {
+                Log.Debug("This 96 role is not have first person control.");
+                return false;
+            }
+
+            if (fpc.Model is not Scp096CharacterModel scp96AnimatedCharacterModel)
+            {
+                Log.Debug("This 96 role doesnt have Scp096CharacterModel.");
+                return false;
+            }
+
+            headTransform = scp96AnimatedCharacterModel.Head;
+            return scp96AnimatedCharacterModel.Head != null;
+        }
+
+        public static void ShowHidedNetworkObject(this Player player, GameObject networkedObject)
+        {
+            if (!networkedObject.TryGetComponent(out NetworkIdentity identity))
+            {
+                Log.Warn($"{networkedObject} not have network identity");
                 return;
             }
 
-            foreach (Player ply in ProjectSCRAMBLE.ActiveScramblePlayers[player])
-            {
-                if (!Scp96sCencors.ContainsKey(ply))
-                    continue;
-
-                Log.Debug($"{ply.Nickname} Obfuscate destroying for {player.Nickname} ");
-                player.DestroySchematic(Scp96sCencors[ply]);
-            }
-
-            ProjectSCRAMBLE.ActiveScramblePlayers.Remove(player);
+            Server.SendSpawnMessage.Invoke(null, [identity, player.Connection]);
         }
 
-        public static Transform GetScp96Head(this Player player)
+        public static void HideNetworkObject(this Player player, GameObject networkedObject)
         {
-            if (player.Role.Base is not IFpcRole fpc)
+            if (!networkedObject.TryGetComponent(out NetworkIdentity identity))
             {
-                Log.Debug("This 96 role is not have first person control.");
-                return null;
+                Log.Warn($"{networkedObject} not have network identity");
+                return;
             }
 
-            CharacterModel model = fpc.FpcModule.CharacterModelInstance;
-            if (model is not Scp096CharacterModel anima)
-            {
-                Log.Debug("This 96 role doesnt have Scp096CharacterModel.");
-                return null;
-            }
-
-            return anima.Head;
-        }
-
-        public static void SpawnSchematic(this Player player, SchematicObject schematic)
-        {
-            foreach (NetworkIdentity networkIdentity in schematic.NetworkIdentities)
-            {
-                Server.SendSpawnMessage.Invoke(null, [networkIdentity, player.Connection]);
-            }
-        }
-
-        public static void DestroySchematic(this Player player, SchematicObject schematic)
-        {
-            foreach (NetworkIdentity networkIdentity in schematic.NetworkIdentities)
-            {
-                player.Connection.Send(new ObjectDestroyMessage
-                {
-                    netId = networkIdentity.netId
-                });
-            }
-        }
-
-        public static void SendFakeEffect(this Player effectOwner, EffectType effect, byte intensity)
-        {
-            MirrorExtensions.SendFakeSyncObject(effectOwner, effectOwner.NetworkIdentity, typeof(PlayerEffectsController), (writer) =>
-            {
-                const ulong InitSyncObjectDirtyBit = 0b0001;
-                const uint ChangesCount = 1;
-                const byte OperationId = (byte)SyncList<byte>.Operation.OP_SET;
-
-                StatusEffectBase foundEffect = effectOwner.GetEffect(effect);
-                uint index = (uint)effectOwner.GetEffectIndex(foundEffect);
-                if (index < 0)
-                    return;
-
-                byte newIntensity = intensity;
-
-                writer.WriteULong(InitSyncObjectDirtyBit);
-                writer.WriteUInt(ChangesCount);
-                writer.WriteByte(OperationId);
-                writer.WriteUInt(index);
-                writer.WriteByte(newIntensity);
-            });
-        }
-
-        private static int GetEffectIndex(this Player player, StatusEffectBase effect)
-        {
-            PlayerEffectsController controller = player.ReferenceHub.playerEffectsController;
-            for (int i = 0; i < controller.EffectsLength; i++)
-            {
-                if (ReferenceEquals(controller.AllEffects[i], effect))
-                    return i;
-            }
-
-            return -1;
+            player.Connection.Send(new ObjectHideMessage(){ netId = identity.netId });
         }
     }
 }

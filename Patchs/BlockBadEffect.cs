@@ -1,5 +1,6 @@
-﻿using HarmonyLib;
-using InventorySystem.Items.Usables.Scp1344;
+﻿using InventorySystem.Items.Usables.Scp1344;
+
+using HarmonyLib;
 
 namespace ProjectSCRAMBLE.Patchs
 {
@@ -8,17 +9,12 @@ namespace ProjectSCRAMBLE.Patchs
     {
         public static bool Prefix(Scp1344Item __instance)
         {
-            if (!Plugin.Instance.Config.ProjectSCRAMBLE.CanWearOff)
+            if (!ProjectSCRAMBLE.SCRAMBLE.TrackedSerials.Contains(__instance.ItemSerial))
                 return true;
 
-            if (ProjectSCRAMBLE.SCRAMBLE.TrackedSerials.Contains(__instance.ItemSerial))
-            {
-                __instance.Scp1344Effect.IsEnabled = false;
-                __instance.BlindnessEffect.IsEnabled = false;
-                return false;
-            }
-
-            return true;
+            __instance.Scp1344Effect.IsEnabled = false;
+            __instance.BlindnessEffect.IsEnabled = false;
+            return false;
         }
     }
 }

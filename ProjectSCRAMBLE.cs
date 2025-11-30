@@ -1,14 +1,24 @@
-﻿using MEC;
+﻿using System.Collections.Generic;
+
 using Exiled.API.Enums;
+using Exiled.API.Extensions;
 using Exiled.API.Features;
-using YamlDotNet.Serialization;
-using Exiled.API.Features.Spawn;
-using ProjectSCRAMBLE.Extensions;
-using System.Collections.Generic;
 using Exiled.API.Features.Attributes;
-using Exiled.Events.EventArgs.Scp1344;
+using Exiled.API.Features.Spawn;
+using Exiled.CustomItems.API.EventArgs;
 using Exiled.CustomItems.API.Features;
+using Exiled.Events.EventArgs.Scp1344;
+
 using InventorySystem.Items.Usables.Scp1344;
+
+using MEC;
+
+using ProjectSCRAMBLE.Extensions;
+
+using UnityEngine;
+
+using YamlDotNet.Serialization;
+
 using Scp1344event = Exiled.Events.Handlers.Scp1344;
 
 namespace ProjectSCRAMBLE
@@ -16,11 +26,11 @@ namespace ProjectSCRAMBLE
     [CustomItem(ItemType.SCP1344)]
     public class ProjectSCRAMBLE : CustomItem
     {
-        public static Dictionary<ushort, float> ScrambleCharges = [];
+        public Dictionary<ushort, float> ScrambleCharges { get; set; } = [];
 
-        public static Dictionary<Player, List<Player>> ActiveScramblePlayers = [];
+        public Dictionary<Player, List<Player>> ActiveScramblePlayers { get; set; } = [];
 
-        internal static ProjectSCRAMBLE SCRAMBLE;
+        internal static ProjectSCRAMBLE SCRAMBLE { get; set; }
 
         public bool CanWearOff { get; set; } = true;
 
@@ -59,6 +69,46 @@ namespace ProjectSCRAMBLE
         {
             Scp1344event.ChangedStatus -= OnChangedStatus;
             base.UnsubscribeEvents();
+        }
+
+        protected override void OnUpgrading(UpgradingEventArgs ev)
+        {
+            switch(ev.KnobSetting)
+            {
+                case Scp914.Scp914KnobSetting.Rough:
+                    ScrambleCharges[ev.Pickup.Serial] = 0f;
+                    break;
+
+                case Scp914.Scp914KnobSetting.Coarse:
+                    float charge = Random.Range(0, 50f);
+                    ScrambleCharges[ev.Pickup.Serial] = charge;
+                    break;
+
+                case Scp914.Scp914KnobSetting.Fine:
+                case Scp914.Scp914KnobSetting.VeryFine:
+                    ScrambleCharges[ev.Pickup.Serial] = 100f;
+                    break;
+            }
+        }
+
+        protected override void OnUpgrading(UpgradingItemEventArgs ev)
+        {
+            switch (ev.KnobSetting)
+            {
+                case Scp914.Scp914KnobSetting.Rough:
+                    ScrambleCharges[ev.Item.Serial] = 0f;
+                    break;
+
+                case Scp914.Scp914KnobSetting.Coarse:
+                    float charge = Random.Range(0, 50f);
+                    ScrambleCharges[ev.Item.Serial] = charge;
+                    break;
+
+                case Scp914.Scp914KnobSetting.Fine:
+                case Scp914.Scp914KnobSetting.VeryFine:
+                    ScrambleCharges[ev.Item.Serial] = 100f;
+                    break;
+            }
         }
 
         private void OnChangedStatus(ChangedStatusEventArgs ev)
@@ -111,7 +161,7 @@ namespace ProjectSCRAMBLE
                 if (player == null || player.IsDead)
                     return;
 
-                player.SendFakeEffect(EffectType.Scp1344, 0);
+                player.SendFakeEffectTo(player, EffectType.Scp1344, 0);
 
                 if (Plugin.Instance.Config.SimulateTemporaryDarkness)
                     player.EnableEffect(EffectType.Blinded, 255, float.MaxValue, true);

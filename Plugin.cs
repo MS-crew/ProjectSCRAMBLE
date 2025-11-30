@@ -1,7 +1,12 @@
 ﻿using System;
-using HarmonyLib;
+
+using ProjectSCRAMBLE.Extensions;
+using ProjectSCRAMBLE.Patchs;
+
 using Exiled.API.Features;
 using Exiled.CustomItems.API;
+
+using HarmonyLib;
 
 namespace ProjectSCRAMBLE
 {
@@ -9,19 +14,19 @@ namespace ProjectSCRAMBLE
     {
         private Harmony harmony;
 
-        public static EventHandlers eventHandlers;
-
-        public override string Author => "ZurnaSever";
-
-        public override string Name => "ProjectSCRAMBLE";
-
-        public override string Prefix => "ProjectSCRAMBLE";
+        private EventHandlers eventHandlers;
 
         public static Plugin Instance { get; private set; }
 
-        public override Version Version { get; } = new Version(1, 2, 0);
+        public override string Author { get; } = "ZurnaSever";
 
-        public override Version RequiredExiledVersion { get; } = new Version(9, 6, 0);
+        public override string Name { get; } = "ProjectSCRAMBLE";
+
+        public override string Prefix { get; } = "ProjectSCRAMBLE";
+
+        public override Version Version { get; } = new Version(1, 3, 0);
+
+        public override Version RequiredExiledVersion { get; } = new Version(9, 10, 0);
 
         public override void OnEnabled()
         {
@@ -29,24 +34,43 @@ namespace ProjectSCRAMBLE
             eventHandlers = new EventHandlers();
 
             Config.ProjectSCRAMBLE.Register();
-            eventHandlers.Sucsribe();
+            eventHandlers.Subscribe();
 
-            harmony = new Harmony("ProjectSCRAMBLE" + DateTime.Now.Ticks);
-            harmony.PatchAll();
+            harmony = new Harmony(Prefix + DateTime.Now.Ticks);
+            DoDynamicPatchs();
 
             base.OnEnabled();
         }
 
         public override void OnDisabled()
         {
-            harmony.UnpatchAll(harmonyID: "ProjectSCRAMBLE");
+            harmony.UnpatchAll(harmony.Id);
 
             Config.ProjectSCRAMBLE.Unregister();
-            eventHandlers.UnSucsribe();
+            eventHandlers.Unsubscribe();
 
             eventHandlers = null;
             Instance = null;
             base.OnDisabled();
-        } 
+        }
+
+        private void DoDynamicPatchs()
+        {
+            if (Config.OverrideWearingTime)
+            {
+                harmony.PatchSingleType(typeof(SetWearingTime));
+            }
+
+            if (Config.OverrideWearingOffTime) 
+            {
+                harmony.PatchSingleType(typeof(SetWearOffTime));
+            }
+
+            if (!Config.ProjectSCRAMBLE.CanWearOff)
+                return;
+
+            harmony.PatchSingleType(typeof(BlockBadEffect));
+            harmony.PatchSingleType(typeof(BlockForceDrop));
+        }
     }
 }

@@ -1,9 +1,10 @@
-﻿using HarmonyLib;
-using System.Reflection.Emit;
-using Exiled.API.Features.Pools;
+﻿using System.Reflection.Emit;
 using System.Collections.Generic;
 using InventorySystem.Items.Usables.Scp1344;
 
+using Exiled.API.Features.Pools;
+
+using HarmonyLib;
 using static HarmonyLib.AccessTools;
 
 namespace ProjectSCRAMBLE.Patchs
@@ -25,19 +26,14 @@ namespace ProjectSCRAMBLE.Patchs
 
             NewCodes.InsertRange(index,
             [
-                new(OpCodes.Call,     PropertyGetter(typeof(Plugin), nameof(Plugin.Instance))),
-                new(OpCodes.Callvirt, PropertyGetter(typeof(Plugin), nameof(Config))),
-                new(OpCodes.Callvirt, PropertyGetter(typeof(Config), nameof(Config.ProjectSCRAMBLE))),
-                new(OpCodes.Callvirt, PropertyGetter(typeof(ProjectSCRAMBLE), nameof(ProjectSCRAMBLE.CanWearOff))),
-                new(OpCodes.Brfalse_S,Skip),
-                new(OpCodes.Ldsfld,   Field(typeof(ProjectSCRAMBLE), nameof(ProjectSCRAMBLE.SCRAMBLE))),
-                new(OpCodes.Callvirt, PropertyGetter(typeof(ProjectSCRAMBLE), nameof(ProjectSCRAMBLE.TrackedSerials))),
+                new(OpCodes.Call,      PropertyGetter(typeof(ProjectSCRAMBLE), nameof(ProjectSCRAMBLE.SCRAMBLE))),
+                new(OpCodes.Callvirt,  PropertyGetter(typeof(ProjectSCRAMBLE), nameof(ProjectSCRAMBLE.TrackedSerials))),
                 new(OpCodes.Ldarg_0),
-                new(OpCodes.Callvirt, PropertyGetter(typeof(Scp1344Item), nameof(Scp1344Item.ItemSerial))),
-                new(OpCodes.Callvirt, Method(typeof(HashSet<int>), nameof(HashSet<int>.Contains), [typeof(int)])),
-                new(OpCodes.Brfalse_S,Skip),
-                new(OpCodes.Ldc_R4,   Plugin.Instance.Config.DeactivateTime),
-                new(OpCodes.Br_S ,    Skip2)
+                new(OpCodes.Callvirt,  PropertyGetter(typeof(Scp1344Item), nameof(Scp1344Item.ItemSerial))),
+                new(OpCodes.Callvirt,  Method(typeof(HashSet<int>), nameof(HashSet<int>.Contains), [typeof(int)])),
+                new(OpCodes.Brfalse_S, Skip),
+                new(OpCodes.Ldc_R4,    Plugin.Instance.Config.WearingOffTime),
+                new(OpCodes.Br_S ,     Skip2)
             ]);
 
             for (int i = 0; i < NewCodes.Count; i++)

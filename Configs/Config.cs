@@ -27,37 +27,53 @@ namespace ProjectSCRAMBLE
         [Description("How much power should the SCRAMBLEs use to obfuscate 96's face? (1 = default, >1 = faster, <1 = slower)")]
         public float ChargeUsageMultiplayer { get; set; } = 1;
 
-        [Description("Attach to head or Directl attach to player")]
+        [Description("Attach to head or Directly attach to player")]
         public bool AttachCensorToHead { get; set; } = true;
 
         [Description("0.1 is okey, 0.01 better/good , 0.001 greater")]
         public float AttachToHeadsyncInterval { get; set; } = 0.01f;
 
+#if PMER
         [Description("Censor schematic name")]
         public string CensorSchematic { get; set; } = "Censormain";
+#else
+        [Description("Rotate censor randomly")]
+        public bool CensorRotate { get; set; } = true;
 
-        [Description("Censor schematic scale")]
-        public Vector3 CensorSchematicScale { get; set; } = new Vector3(0.5f, 0.5f , 0.5f);
+        [Description("Censor Color")]
+        public Color CensorColor { get; set; } = new Color(0, 0, 0, 1);
+#endif
+
+        [Description("Censor scale")]
+        public Vector3 CensorScale { get; set; } = Vector3.one * 0.5f;
+
 
         [Description("Wearing time (default 5)")]
-        public float ActivateTime { get; set; } = 1f;
+        public bool OverrideWearingTime { get; set; } = true;
+        public float WearingTime { get; set; } = 1f;
+
 
         [Description("Removal time (default 5.1)")]
-        public float DeactivateTime { get; set; } = 1f;
+        public bool OverrideWearingOffTime { get; set; } = true;
+        public float WearingOffTime { get; set; } = 1f;
+
 
         [Description("Custom item settings")]
         public ProjectSCRAMBLE ProjectSCRAMBLE { get; set; } = new ProjectSCRAMBLE();
+
 
         [Description("Hint settings")]
         public Hints Hint { get; set; } = new Hints();
         public class Hints 
         {
-            public float XCordinate { get; set; } = 370;
             public float YCordinate { get; set; } = 90;
+#if HSM
+            public float XCordinate { get; set; } = 370;
             public int FontSize { get; set; } = 20;
 
             [Description("0 = left , 1 = right, 2 = center")]
             public int Alligment { get; set; } = 0;
+#endif
         }
     }
 }

@@ -15,13 +15,13 @@ namespace ProjectSCRAMBLE.Commands
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (PlayerExtensions.Scp96sCencors.Count == 0)
+            if (PlayerExtensions.Scp96Censors.Count == 0)
             {
                 response = "No active SCP-96 sensors.";
                 return true;
             }
 
-            IEnumerable<string> lines = PlayerExtensions.Scp96sCencors.Select(data =>
+            IEnumerable<string> lines = PlayerExtensions.Scp96Censors.Select(data =>
             {
                 string schematicName = data.Value?.name ?? "null";
                 return $"{data.Key.Nickname} -> {schematicName}";

@@ -15,13 +15,13 @@ namespace ProjectSCRAMBLE.Commands
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
 
-            if (ProjectSCRAMBLE.ActiveScramblePlayers.Count == 0)
+            if (ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.Count == 0)
             {
                 response = "No active scramble player.";
                 return true;
             }
 
-            IEnumerable<string> lines = ProjectSCRAMBLE.ActiveScramblePlayers.Select(data =>
+            IEnumerable<string> lines = ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.Select(data =>
             {
                 string mainPlayer = data.Key.Nickname;
                 List<string> scrambled = [.. data.Value.Select(p => p.Nickname)];
