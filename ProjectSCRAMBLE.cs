@@ -26,11 +26,11 @@ namespace ProjectSCRAMBLE
     [CustomItem(ItemType.SCP1344)]
     public class ProjectSCRAMBLE : CustomItem
     {
+        internal static ProjectSCRAMBLE SCRAMBLE { get; set; }
+
         public Dictionary<ushort, float> ScrambleCharges { get; set; } = [];
 
         public Dictionary<Player, List<Player>> ActiveScramblePlayers { get; set; } = [];
-
-        internal static ProjectSCRAMBLE SCRAMBLE { get; set; }
 
         public bool CanWearOff { get; set; } = true;
 
