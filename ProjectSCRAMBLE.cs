@@ -1,38 +1,45 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using Exiled.API.Enums;
-using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.API.Features.Attributes;
 using Exiled.API.Features.Spawn;
 using Exiled.CustomItems.API.EventArgs;
 using Exiled.CustomItems.API.Features;
+using Exiled.Events.EventArgs.Scp096;
 using Exiled.Events.EventArgs.Scp1344;
 
 using InventorySystem.Items.Usables.Scp1344;
 
 using MEC;
 
+using PlayerRoles.FirstPersonControl.Thirdperson.Subcontrollers.Wearables;
+
 using ProjectSCRAMBLE.Extensions;
+using ProjectSCRAMBLE.Patchs;
 
 using UnityEngine;
 
 using YamlDotNet.Serialization;
 
+using static ProjectSCRAMBLE.Methods;
+
 using Scp1344event = Exiled.Events.Handlers.Scp1344;
+using Scp96Event = Exiled.Events.Handlers.Scp096;
 
 namespace ProjectSCRAMBLE
 {
     [CustomItem(ItemType.SCP1344)]
     public class ProjectSCRAMBLE : CustomItem
     {
-        public Dictionary<ushort, float> ScrambleCharges { get; set; } = [];
-
-        public Dictionary<Player, List<Player>> ActiveScramblePlayers { get; set; } = [];
-
         internal static ProjectSCRAMBLE SCRAMBLE { get; set; }
 
-        public bool CanWearOff { get; set; } = true;
+        [YamlIgnore]
+        public Dictionary<ushort, float> ScrambleCharges { get; set; } = [];
+
+        [YamlIgnore]
+        public HashSet<Player> ActiveScramblePlayers { get; set; } = [];
 
         public override uint Id { get; set; } = 1730;
 
@@ -61,14 +68,28 @@ namespace ProjectSCRAMBLE
 
         protected override void SubscribeEvents()
         {
-            Scp1344event.ChangedStatus += OnChangedStatus;
+            Scp96Event.AddingTarget += OnAddingTarget;
+            Scp1344event.ChangedStatus += OnChangedStatus; 
+            BlockBadEffect.OnProjectScrambleWearOff += DisableScramble;
+
             base.SubscribeEvents();
         }
 
         protected override void UnsubscribeEvents()
         {
-            Scp1344event.ChangedStatus -= OnChangedStatus;
+            Scp96Event.AddingTarget -= OnAddingTarget;
+            Scp1344event.ChangedStatus -= OnChangedStatus; 
+            BlockBadEffect.OnProjectScrambleWearOff -= DisableScramble;
+
             base.UnsubscribeEvents();
+        }
+
+        protected override void OnWaitingForPlayers()
+        {
+            ScrambleCharges.Clear();
+            ActiveScramblePlayers.Clear();
+
+            base.OnWaitingForPlayers();
         }
 
         protected override void OnUpgrading(UpgradingEventArgs ev)
@@ -132,40 +153,161 @@ namespace ProjectSCRAMBLE
 
                 else if (charge <= 0f)
                 {
-                    if (Plugin.Instance.Config.RemoveOrginal1344Effect) 
-                        RemoveOrginalEffect(ev.Player);
-
-                    ev.Player.DeObfuscateScp96s();
+                    ev.Player.DisableEffect(EffectType.Scp1344); 
                     ev.Player.AddSCRAMBLEHint(Plugin.Instance.Translation.OffCharge);
+                    ev.Player.ReferenceHub.EnableWearables(WearableElements.Scp1344Goggles);
                     Log.Debug($"{ev.Player.Nickname}: Tried to wear SCRAMBLE with no charge.");
                     return;
                 }
 
                 string hint = Plugin.Instance.Translation.Charge.Replace("{charge}", charge.FormatCharge());
                 ev.Player.AddSCRAMBLEHint(hint);
+
                 Log.Debug($"{ev.Player.Nickname}: SCRAMBLEs charge {charge}.");
             }
 
-            if (Plugin.Instance.Config.RemoveOrginal1344Effect)
-                RemoveOrginalEffect(ev.Player);  
-
-            ActiveScramblePlayers[ev.Player] = [];
-            ev.Player.ObfuscateScp96s();
-            Log.Debug($"{ev.Player.Nickname}: Activated Project SCRAMBLE");
+            ActivateScramble(ev.Player);
         }
 
-        private void RemoveOrginalEffect(Player player)
+        public void OnAddingTarget(AddingTargetEventArgs ev)
         {
-            Timing.CallDelayed(1f, () =>
+            if (!ev.IsLooking)
+                return;
+
+            if (!ActiveScramblePlayers.Contains(ev.Target))
+                return;
+
+            Config config = Plugin.Instance.Config;
+            Translation translation = Plugin.Instance.Translation;
+
+            bool shouldRandomError = config.RandomError && Random.Range(0f, 100f) <= config.RandomErrorChance;
+
+            if (!config.ScrambleCharge)
             {
-                if (player == null || player.IsDead)
+                if (shouldRandomError)
+                {
+                    ev.Target.AddSCRAMBLEHint(translation.Error);
                     return;
+                }
 
-                player.SendFakeEffectTo(player, EffectType.Scp1344, 0);
+                ev.IsAllowed = false;
+                return;
+            }
 
-                if (Plugin.Instance.Config.SimulateTemporaryDarkness)
-                    player.EnableEffect(EffectType.Blinded, 255, float.MaxValue, true);
-            });
+            ushort serial = 0;
+
+            var items = ev.Target.Inventory.UserInventory.Items.Keys;
+            foreach (ushort key in items)
+            {
+                if (TrackedSerials.Contains(key))
+                {
+                    serial = key;
+                    break;
+                }
+            }
+
+            if (serial == 0)
+            {
+                string playerSerials = string.Join(", ", items.Select(k => k.ToString()));
+                string trackedSerials = string.Join(", ", TrackedSerials.Select(s => s.ToString()));
+                Log.Debug
+                    ($"""
+                    [SCRAMBLE ERROR]
+                    Player: {ev.Target.Nickname} ({ev.Target.UserId})
+                    Reason: No matching SCRAMBLE serial found.
+                    Player Serial Keys: [{playerSerials}]
+                    Tracked Serial Keys: [{trackedSerials}]
+                    """);
+                ev.IsAllowed = false;
+                return;
+            }
+
+            if (!ScrambleCharges.TryGetValue(serial, out float charge))
+            {
+                charge = 100f;
+                ScrambleCharges[serial] = charge;
+                ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge()));
+                ev.IsAllowed = false;
+                return;
+            }
+
+            if (charge <= 0f)
+            {
+                ev.Target.AddSCRAMBLEHint(translation.OffCharge);
+                DeObfuscateScp96s(ev.Target);
+                return;
+            }
+
+            SCRAMBLE.ScrambleCharges[serial] -= Time.deltaTime * config.ChargeUsageMultiplayer;
+
+            if (shouldRandomError)
+            {
+                ev.Target.AddSCRAMBLEHint(translation.Error);
+                Timing.CallDelayed(0.5f, () => ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge())));
+                return;
+            }
+
+            ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge()));
+            ev.IsAllowed = false;
+        }
+
+        private void ActivateScramble(Player player)
+        {
+            Config config = Plugin.Instance.Config;
+
+            player.DisableEffect(EffectType.Scp1344);
+            player.ReferenceHub.EnableWearables(WearableElements.Scp1344Goggles);
+
+            if (config.SimulateTemporaryDarkness)
+                player.EnableEffect(EffectType.Blinded, 255, float.MaxValue, true);
+
+            ObfuscateScp96s(player);
+            ActiveScramblePlayers.Add(player);
+
+            foreach (Player ply in player.CurrentSpectatingPlayers)
+            {
+                ObfuscateScp96s(ply);
+                Plugin.Instance.EventHandlers.DirtyPlayers.Add(ply);
+            }
+
+            Log.Debug($"{player.Nickname}: Activated Project Scramble");
+        }
+
+        private void DisableScramble(ReferenceHub hub)
+        {
+            Player player = Player.Get(hub);
+
+            player.ReferenceHub.DisableWearables(WearableElements.Scp1344Goggles);
+            if (Plugin.Instance.Config.SimulateTemporaryDarkness)
+                player.DisableEffect(EffectType.Blinded);
+
+            DeObfuscateScp96s(player); 
+            player.RemoveSCRAMBLEHint();
+            ActiveScramblePlayers.Remove(player);
+
+            foreach (Player ply in player.CurrentSpectatingPlayers)
+            {
+                DeObfuscateScp96s(ply);
+                Plugin.Instance.EventHandlers.DirtyPlayers.Remove(ply);
+            }
+
+            Log.Debug($"{player.Nickname} : Deactivated  Project Scramble");
+        }
+
+        public void ObfuscateScp96s(Player player)
+        {
+            foreach (GameObject censor in Scp96Censors.Values)
+            {
+                player.ShowHidedNetworkObject(censor);
+            }
+        }
+
+        public void DeObfuscateScp96s(Player player)
+        {
+            foreach (GameObject censor in Scp96Censors.Values)
+            {
+                player.HideNetworkObject(censor);
+            }
         }
     }
 }

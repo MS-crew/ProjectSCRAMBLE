@@ -14,9 +14,9 @@ namespace ProjectSCRAMBLE
     {
         private Harmony harmony;
 
-        private EventHandlers eventHandlers;
-
         public static Plugin Instance { get; private set; }
+
+        public EventHandlers EventHandlers { get; private set; }
 
         public override string Author { get; } = "ZurnaSever";
 
@@ -31,10 +31,10 @@ namespace ProjectSCRAMBLE
         public override void OnEnabled()
         {
             Instance = this;
-            eventHandlers = new EventHandlers();
+            EventHandlers = new EventHandlers();
 
             Config.ProjectSCRAMBLE.Register();
-            eventHandlers.Subscribe();
+            EventHandlers.Subscribe();
 
             harmony = new Harmony(Prefix + DateTime.Now.Ticks);
             DoDynamicPatchs();
@@ -47,30 +47,23 @@ namespace ProjectSCRAMBLE
             harmony.UnpatchAll(harmony.Id);
 
             Config.ProjectSCRAMBLE.Unregister();
-            eventHandlers.Unsubscribe();
+            EventHandlers.Unsubscribe();
 
-            eventHandlers = null;
+            EventHandlers = null;
             Instance = null;
             base.OnDisabled();
         }
 
         private void DoDynamicPatchs()
         {
-            if (Config.OverrideWearingTime)
+            harmony.PatchSingleType(typeof(SetWearOffTime));
+            harmony.PatchSingleType(typeof(SetWearingTime));
+
+            if (Config.CanWearOff)
             {
-                harmony.PatchSingleType(typeof(SetWearingTime));
+                harmony.PatchSingleType(typeof(BlockBadEffect));
+                harmony.PatchSingleType(typeof(BlockForceDrop));
             }
-
-            if (Config.OverrideWearingOffTime) 
-            {
-                harmony.PatchSingleType(typeof(SetWearOffTime));
-            }
-
-            if (!Config.ProjectSCRAMBLE.CanWearOff)
-                return;
-
-            harmony.PatchSingleType(typeof(BlockBadEffect));
-            harmony.PatchSingleType(typeof(BlockForceDrop));
         }
     }
 }

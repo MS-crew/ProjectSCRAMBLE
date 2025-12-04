@@ -112,11 +112,14 @@
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(EXILED_REFERENCES)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>..\..\..\EXILED_REFERENCES\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\CensorsInfo.cs" />
-    <Compile Include="Commands\ScramblesInfo.cs" />
     <Compile Include="Configs\Config.cs" />
     <Compile Include="EventHandlers.cs" />
     <Compile Include="Extensions\CommonExtensions.cs" />

@@ -1,164 +1,113 @@
 ﻿using System.Linq;
+using System.Collections.Generic;
 
 using MEC;
+
 using UnityEngine;
+
 using PlayerRoles;
+
 using ProjectSCRAMBLE.Extensions;
 
-using Exiled.API.Enums;
 using Exiled.API.Features;
-using Exiled.API.Extensions;
 using Exiled.Events.EventArgs.Player;
-using Exiled.Events.EventArgs.Scp096;
 
-using Scp96Event = Exiled.Events.Handlers.Scp096;
-using PlayerEvent = Exiled.Events.Handlers.Player;
+using ProjectSCRAMBLE.Patchs;
 
 #if PMER
 using ProjectMER.Features.Objects;
 #endif
 
+
+using PlayerEvent = Exiled.Events.Handlers.Player;
+using ServerEvent = Exiled.Events.Handlers.Server;
+
+using static ProjectSCRAMBLE.Methods;
+using static ProjectSCRAMBLE.ProjectSCRAMBLE;
+
 namespace ProjectSCRAMBLE
 {
     public class EventHandlers
     {
+        public HashSet<Player> DirtyPlayers { get; set; } = [];
+
         public void Subscribe()
         {
-            PlayerEvent.Verified += OnVerified;
-            PlayerEvent.Spawned += OnChangedRole;
-            PlayerEvent.ReceivingEffect += OnChangeEffect;
+            ServerEvent.WaitingForPlayers += OnWaitingforPlayers;
 
-            Scp96Event.AddingTarget += OnAddingTarget;
+            PlayerEvent.Verified += OnVerified;
+            PlayerEvent.Spawned += OnChangedRole; 
+            PlayerEvent.ChangingSpectatedPlayer += OnChangingSpectatedPlayer;
         }
 
         public void Unsubscribe()
-        {   
+        {
+            ServerEvent.WaitingForPlayers -= OnWaitingforPlayers;
+
             PlayerEvent.Verified -= OnVerified;
-            PlayerEvent.Spawned -= OnChangedRole;
-            PlayerEvent.ReceivingEffect -= OnChangeEffect;
-
-            Scp96Event.AddingTarget -= OnAddingTarget;
+            PlayerEvent.Spawned -= OnChangedRole; 
+            PlayerEvent.ChangingSpectatedPlayer -= OnChangingSpectatedPlayer;
         }
 
-
-        private void OnChangedRole(SpawnedEventArgs ev)
+        private void OnWaitingforPlayers()
         {
-            if (ProjectSCRAMBLE.SCRAMBLE == null)
-                return;
+            DirtyPlayers.Clear();
+            Scp96Censors.Clear();
 
-            if (ev.OldRole == RoleTypeId.Scp096 && ev.Player.Role != RoleTypeId.Scp096)
+            foreach (HashSet<CoroutineHandle> handles in Coroutines.Values)
             {
-                ev.Player.RemoveCensor();
-                Log.Debug($"Scp96:{ev.Player.Nickname} removed censor");
-            }
-            else if (ev.Player.Role == RoleTypeId.Scp096)
-            {
-                Timing.CallDelayed(0.5f, ev.Player.AddCensor);
-                Log.Debug($"Scp96:{ev.Player.Nickname} added censor");
-            }
-        }
-
-        public void OnAddingTarget(AddingTargetEventArgs ev)
-        {
-            if (!ev.IsLooking)
-                return;
-
-            if (!ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.ContainsKey(ev.Target))
-                return;
-
-            Config config = Plugin.Instance.Config;
-            Translation translation = Plugin.Instance.Translation;
-
-            bool shouldRandomError = config.RandomError && Random.Range(0f, 100f) <= config.RandomErrorChance;
-
-            if (!config.ScrambleCharge)
-            {
-                if (shouldRandomError)
+                foreach(CoroutineHandle handle in handles)
                 {
-                    ev.Target.AddSCRAMBLEHint(translation.Error);
-                    return;
-                }
-
-                ev.IsAllowed = false;
-                return;
-            }
-
-            ushort serial = 0;
-
-            var items = ev.Target.Inventory.UserInventory.Items.Keys;
-            foreach (ushort key in items)
-            {
-                if (ProjectSCRAMBLE.SCRAMBLE.TrackedSerials.Contains(key))
-                {
-                    serial = key;
-                    break;
+                    Timing.KillCoroutines(handle);
                 }
             }
-
-            if (serial == 0)
-            {
-                string playerSerials = string.Join(", ", ev.Target.Inventory.UserInventory.Items.Keys.Select(k => k.ToString()));
-                string trackedSerials = string.Join(", ", ProjectSCRAMBLE.SCRAMBLE.TrackedSerials.Select(s => s.ToString()));
-                Log.Debug
-                    ($"""
-                    [SCRAMBLE ERROR]
-                    Player: {ev.Target.Nickname} ({ev.Target.UserId})
-                    Reason: No matching SCRAMBLE serial found.
-                    Player Serial Keys: [{playerSerials}]
-                    Tracked Serial Keys: [{trackedSerials}]
-                    """);
-                ev.IsAllowed = false;
-                return;
-            }
-
-            if (!ProjectSCRAMBLE.SCRAMBLE.ScrambleCharges.TryGetValue(serial, out float charge))
-            {
-                charge = 100f;
-                ProjectSCRAMBLE.SCRAMBLE.ScrambleCharges[serial] = charge;
-                ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge()));
-                ev.IsAllowed = false;
-                return;
-            }
-
-            if (charge <= 0f)
-            {
-                ev.Target.AddSCRAMBLEHint(translation.OffCharge);
-                ev.Target.DeObfuscateScp96s();
-                return;
-            }
-
-            ProjectSCRAMBLE.SCRAMBLE.ScrambleCharges[serial] -= Time.deltaTime * config.ChargeUsageMultiplayer;
-
-            if (shouldRandomError)
-            {
-                ev.Target.AddSCRAMBLEHint(translation.Error);
-                Timing.CallDelayed(0.5f , () => ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge())));
-                return;
-            }
-            
-            ev.Target.AddSCRAMBLEHint(translation.Charge.Replace("{charge}", charge.FormatCharge()));
-            ev.IsAllowed = false;
-        }
-
-        private void OnChangeEffect(ReceivingEffectEventArgs ev)
-        {
-            if (ev.Effect.GetEffectType() != EffectType.Scp1344 || !ev.Effect.IsEnabled)
-                return;
-
-            ev.Player.RemoveSCRAMBLEHint();
-
-            if (!ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.ContainsKey(ev.Player))
-                return;
-
-            ev.Player.DeObfuscateScp96s();
-            Log.Debug("Player wear-off Project SCRAMBLE");
+                
+            Coroutines.Clear();
         }
 
         public void OnVerified(VerifiedEventArgs ev)
         {
-            foreach (GameObject censor in PlayerExtensions.Scp96Censors.Values)
+            foreach (GameObject censor in Scp96Censors.Values)
             {
                 ev.Player.HideNetworkObject(censor);
+            }
+        }
+
+        private void OnChangedRole(SpawnedEventArgs ev)
+        {
+            if (SCRAMBLE.ActiveScramblePlayers.Contains(ev.Player))
+                BlockBadEffect.WearOffProjectScramble(ev.Player.ReferenceHub);
+
+            if (DirtyPlayers.Contains(ev.Player))
+            {
+                SCRAMBLE.DeObfuscateScp96s(ev.Player);
+                DirtyPlayers.Remove(ev.Player);
+            }
+
+            if (ev.OldRole == RoleTypeId.Scp096 && ev.Player.Role != RoleTypeId.Scp096)
+            {
+                RemoveCensor(ev.Player);
+                Log.Debug($"Scp96:{ev.Player.Nickname} removed censor");
+            }
+            else if (ev.Player.Role == RoleTypeId.Scp096)
+            {
+                Timing.CallDelayed(0.5f, () => AddCensor(ev.Player));
+                Log.Debug($"Scp96:{ev.Player.Nickname} added censor");
+            }
+        }
+
+        private void OnChangingSpectatedPlayer(ChangingSpectatedPlayerEventArgs ev)
+        {
+            if (ev.OldTarget != null && SCRAMBLE.ActiveScramblePlayers.Contains(ev.OldTarget))
+            {
+                SCRAMBLE.DeObfuscateScp96s(ev.Player);
+                DirtyPlayers.Remove(ev.Player);
+            }
+
+            if (ev.NewTarget != null && SCRAMBLE.ActiveScramblePlayers.Contains(ev.NewTarget))
+            {
+                SCRAMBLE.ObfuscateScp96s(ev.Player);
+                DirtyPlayers.Add(ev.Player);
             }
         }
     }

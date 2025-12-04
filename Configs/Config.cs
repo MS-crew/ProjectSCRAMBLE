@@ -9,8 +9,7 @@ namespace ProjectSCRAMBLE
         public bool IsEnabled { get; set; } = true;
         public bool Debug { get; set; } = false;
 
-        [Description("Whether to remove the main 1344 effect when using SCRAMBLES")]
-        public bool RemoveOrginal1344Effect { get; set; } = true;
+        public bool CanWearOff { get; set; } = true;
 
         [Description("If you remove the original effect, simulate the temporary darkness when wearing the glasses")]
         public bool SimulateTemporaryDarkness { get; set; } = true;
@@ -37,6 +36,9 @@ namespace ProjectSCRAMBLE
         [Description("Censor schematic name")]
         public string CensorSchematic { get; set; } = "Censormain";
 #else
+        [Description("Censor type as primitive")]
+        public PrimitiveType CensorType { get; set; } = PrimitiveType.Cube;
+
         [Description("Rotate censor randomly")]
         public bool CensorRotate { get; set; } = true;
 
@@ -49,12 +51,10 @@ namespace ProjectSCRAMBLE
 
 
         [Description("Wearing time (default 5)")]
-        public bool OverrideWearingTime { get; set; } = true;
         public float WearingTime { get; set; } = 1f;
 
 
         [Description("Removal time (default 5.1)")]
-        public bool OverrideWearingOffTime { get; set; } = true;
         public float WearingOffTime { get; set; } = 1f;
 
 

@@ -1,23 +1,11 @@
-﻿using System.Collections.Generic;
-
-using AdminToys;
-
-using Exiled.API.Features;
+﻿using Exiled.API.Features;
 using Exiled.API.Features.Roles;
-using Exiled.API.Features.Toys;
-
-using MEC;
 
 using Mirror;
 
-using PlayerRoles;
 using PlayerRoles.PlayableScps.Scp096;
 
 using UnityEngine;
-
-using Utils.NonAllocLINQ;
-using System.Runtime.CompilerServices;
-
 
 #if RUEI
 using RueI.API;
@@ -44,14 +32,19 @@ namespace ProjectSCRAMBLE.Extensions
         private static readonly string hsmID = "SCRAMBLE";
 #endif
 
-        public static Dictionary<Player, GameObject> Scp96Censors = [];
-
-        public static void AddSCRAMBLEHint(this Player player, string text)
+        internal static void AddSCRAMBLEHint(this Player player, string text)
         {
 #if RUEI
             RueDisplay.Get(player).Show(scrambleHintTag, new BasicElement(Plugin.Instance.Config.Hint.YCordinate, text));
 #elif HSM
-            player.RemoveSCRAMBLEHint();
+            PlayerDisplay pd = player.GetPlayerDisplay();
+
+            if (pd.GetHint(hsmID) != null)
+            {
+                pd.GetHint(hsmID).Text = text;
+                return;
+            }
+
             HintServiceMeow.Core.Models.Hints.Hint newHint = new()
             {
                 Id = hsmID,
@@ -62,11 +55,11 @@ namespace ProjectSCRAMBLE.Extensions
                 Text = text
             };
 
-            player.AddHint(newHint);
+            pd.AddHint(newHint);
 #endif
         }
 
-        public static void RemoveSCRAMBLEHint(this Player player)
+        internal static void RemoveSCRAMBLEHint(this Player player)
         {
 #if RUEI
             RueDisplay.Get(player).Remove(scrambleHintTag);
@@ -77,92 +70,7 @@ namespace ProjectSCRAMBLE.Extensions
 #endif
         }
 
-        public static void AddCensor(this Player player)
-        {
-            if (player.Role.Type != RoleTypeId.Scp096)
-                return;
-            
-            if (!player.TryGetScp96Head(out Transform head))
-            {
-                Log.Error("Scp096 head not found.");
-                return;
-            }
-
-            if (Scp96Censors.ContainsKey(player))
-                player.RemoveCensor();
-
-            Config config = Plugin.Instance.Config;
-#if PMER
-            if (!ObjectSpawner.TrySpawnSchematic(config.CensorSchematic, head.position, head.rotation, 
-                config.CensorScale , out SchematicObject Censor))
-            {
-                Log.Error("Censor Schematic failed to spawn");
-                return;
-            }
-
-            Censor.transform.SetParent(player.Transform, false);
-
-            if (config.AttachCensorToHead)
-                Censor.transform.AttachToTransform(head);
-
-            Scp96Censors.Add(player, Censor.gameObject);
-            Censor.gameObject.HideForUnGlassesPlayer(player);
-#else
-            Primitive Censor = Primitive.Create(primitiveType: PrimitiveType.Cube, flags: PrimitiveFlags.Visible, position: head.position,
-                rotation: head.rotation.eulerAngles, scale: config.CensorScale, spawn: true, color: config.CensorColor);
-
-            Censor.MovementSmoothing = 0;
-            Censor.Transform.SetParent(player.Transform, false);
-
-            if (config.AttachCensorToHead)
-                Censor.Transform.AttachToTransform(head);
-
-            if (config.CensorRotate)
-                Timing.RunCoroutine(Methods.RotateRandom(Censor.Transform));
-
-            Scp96Censors.Add(player, Censor.GameObject);
-            Censor.GameObject.HideForUnGlassesPlayer(player);
-#endif
-        }
-
-        public static void RemoveCensor(this Player player)
-        {
-            if (!Scp96Censors.ContainsKey(player))
-                return;
-
-            GameObject Censor = Scp96Censors[player];
-
-            Scp96Censors.Remove(player);
-            NetworkServer.Destroy(Censor);
-
-            foreach (List<Player> ply in ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.Values)
-            {
-                ply.Remove(player);
-            }
-        }
-
-        public static void ObfuscateScp96s(this Player player)
-        {
-            Dictionary<Player, List<Player>> activeScramblePlayers = ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers;
-
-            foreach (KeyValuePair<Player, GameObject> censor in Scp96Censors)
-            {
-                player.ShowHidedNetworkObject(censor.Value);
-                activeScramblePlayers[player].AddIfNotContains(censor.Key);
-            }
-        }
-
-        public static void DeObfuscateScp96s(this Player player)
-        {
-            foreach (GameObject censor in Scp96Censors.Values)
-            {
-                player.HideNetworkObject(censor);
-            }
-
-            ProjectSCRAMBLE.SCRAMBLE.ActiveScramblePlayers.Remove(player);
-        }
-
-        private static bool TryGetScp96Head(this Player player, out Transform headTransform)
+        internal static bool TryGetScp96Head(this Player player, out Transform headTransform)
         {
             headTransform = null;
 
@@ -179,10 +87,10 @@ namespace ProjectSCRAMBLE.Extensions
             }
 
             headTransform = scp96AnimatedCharacterModel.Head;
-            return scp96AnimatedCharacterModel.Head != null;
+            return headTransform != null;
         }
 
-        public static void ShowHidedNetworkObject(this Player player, GameObject networkedObject)
+        internal static void ShowHidedNetworkObject(this Player player, GameObject networkedObject)
         {
             if (!networkedObject.TryGetComponent(out NetworkIdentity identity))
             {
@@ -199,7 +107,7 @@ namespace ProjectSCRAMBLE.Extensions
 #endif
         }
 
-        public static void HideNetworkObject(this Player player, GameObject networkedObject)
+        internal static void HideNetworkObject(this Player player, GameObject networkedObject)
         {
             if (!networkedObject.TryGetComponent(out NetworkIdentity identity))
             {

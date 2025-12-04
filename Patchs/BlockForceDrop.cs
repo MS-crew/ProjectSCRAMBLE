@@ -1,11 +1,12 @@
-﻿using InventorySystem;
-using InventorySystem.Items;
+﻿using InventorySystem.Items;
 using InventorySystem.Items.Pickups;
 using InventorySystem.Items.Usables.Scp1344;
 
 using Exiled.API.Features.Items;
 
 using HarmonyLib;
+using Exiled.API.Features;
+using InventorySystem;
 
 namespace ProjectSCRAMBLE.Patchs
 {
@@ -24,6 +25,10 @@ namespace ProjectSCRAMBLE.Patchs
                 return;
 
             if (scp1344Item.Status != Scp1344Status.Deactivating)
+                return;
+
+            Player owner = Player.Get(__result.PreviousOwner.Hub);
+            if (owner.IsCuffed)
                 return;
 
             __result.PreviousOwner.Hub.inventory.ServerAddItem(__result.ItemId.TypeId, ItemAddReason.Undefined, __result.Info.Serial, __result);
