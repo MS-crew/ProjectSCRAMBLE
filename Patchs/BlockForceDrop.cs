@@ -1,12 +1,14 @@
-﻿using InventorySystem.Items;
-using InventorySystem.Items.Pickups;
-using InventorySystem.Items.Usables.Scp1344;
-
+﻿using Exiled.API.Features;
 using Exiled.API.Features.Items;
 
 using HarmonyLib;
-using Exiled.API.Features;
+
 using InventorySystem;
+using InventorySystem.Items;
+using InventorySystem.Items.Pickups;
+using InventorySystem.Items.Usables.Scp1344;
+
+using MEC;
 
 namespace ProjectSCRAMBLE.Patchs
 {
@@ -27,12 +29,18 @@ namespace ProjectSCRAMBLE.Patchs
             if (scp1344Item.Status != Scp1344Status.Deactivating)
                 return;
 
-            Player owner = Player.Get(__result.PreviousOwner.Hub);
+            ItemPickupBase pickup = __result;
+            Timing.CallDelayed(0.5f, () => CheckIsCuffed(pickup));
+        }
+
+        private static void CheckIsCuffed(ItemPickupBase pickup)
+        {
+            Player owner = Player.Get(pickup.PreviousOwner.Hub);
             if (owner.IsCuffed)
                 return;
 
-            __result.PreviousOwner.Hub.inventory.ServerAddItem(__result.ItemId.TypeId, ItemAddReason.Undefined, __result.Info.Serial, __result);
-            __result.DestroySelf();
+            pickup.PreviousOwner.Hub.inventory.ServerAddItem(pickup.ItemId.TypeId, ItemAddReason.Undefined, pickup.Info.Serial, pickup);
+            pickup.DestroySelf();
         }
     }
 }
