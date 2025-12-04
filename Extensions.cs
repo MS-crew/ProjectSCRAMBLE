@@ -24,7 +24,7 @@ using ProjectMER.Features.Objects;
 
 namespace ProjectSCRAMBLE.Extensions
 {
-    public static class PlayerExtensions
+    public static class Extensions
     {
 #if RUEI
         private static readonly Tag scrambleHintTag = new("ProjectScramble");
@@ -116,6 +116,11 @@ namespace ProjectSCRAMBLE.Extensions
             }
 
             player.Connection.Send(new ObjectHideMessage(){ netId = identity.netId });
+        }
+
+        internal static string FormatCharge(this float Float)
+        {
+            return ((int)Float).ToString();
         }
     }
 }

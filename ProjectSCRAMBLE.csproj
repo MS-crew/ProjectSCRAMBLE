@@ -122,9 +122,8 @@
   <ItemGroup>
     <Compile Include="Configs\Config.cs" />
     <Compile Include="EventHandlers.cs" />
-    <Compile Include="Extensions\CommonExtensions.cs" />
-    <Compile Include="Extensions\PlayerExtensions.cs" />
-    <Compile Include="Methods\Methods.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Methods.cs" />
     <Compile Include="Patchs\ServerUpdateDeactivatingPatch.cs" />
     <Compile Include="Patchs\SetWearingTime.cs" />
     <Compile Include="Plugin.cs" />
