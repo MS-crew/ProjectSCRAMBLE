@@ -1,12 +1,11 @@
 ﻿using System;
 
-using ProjectSCRAMBLE.Extensions;
-using ProjectSCRAMBLE.Patchs;
-
 using Exiled.API.Features;
 using Exiled.CustomItems.API;
 
 using HarmonyLib;
+
+using ProjectSCRAMBLE.Configs;
 
 namespace ProjectSCRAMBLE
 {
@@ -37,7 +36,7 @@ namespace ProjectSCRAMBLE
             EventHandlers.Subscribe();
 
             harmony = new Harmony(Prefix + DateTime.Now.Ticks);
-            DoDynamicPatchs();
+            harmony.PatchAll();
 
             base.OnEnabled();
         }
@@ -52,18 +51,6 @@ namespace ProjectSCRAMBLE
             EventHandlers = null;
             Instance = null;
             base.OnDisabled();
-        }
-
-        private void DoDynamicPatchs()
-        {
-            harmony.PatchSingleType(typeof(SetWearOffTime));
-            harmony.PatchSingleType(typeof(SetWearingTime));
-
-            if (Config.CanWearOff)
-            {
-                harmony.PatchSingleType(typeof(BlockBadEffect));
-                harmony.PatchSingleType(typeof(BlockForceDrop));
-            }
         }
     }
 }

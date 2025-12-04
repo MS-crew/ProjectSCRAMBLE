@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using InventorySystem.Items.Usables.Scp1344;
 
 using static HarmonyLib.AccessTools;
+
 namespace ProjectSCRAMBLE.Patchs
 {
     [HarmonyPatch(typeof(Scp1344Item), nameof(Scp1344Item.Update))]
-    public static class SetWearingTime
+    public static class Scp1344ItemWearingTimePatch
     {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
@@ -28,7 +29,7 @@ namespace ProjectSCRAMBLE.Patchs
                 new(OpCodes.Callvirt,  PropertyGetter(typeof(ProjectSCRAMBLE), nameof(ProjectSCRAMBLE.TrackedSerials))),
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Callvirt,  PropertyGetter(typeof(Scp1344Item), nameof(Scp1344Item.ItemSerial))),
-                new(OpCodes.Callvirt,  Method(typeof(HashSet<int>), nameof(HashSet<int>.Contains), [typeof(int)])),
+                new(OpCodes.Callvirt,  Method(typeof(HashSet<int>), nameof(HashSet<int>.Contains), [typeof(ushort)])),
                 new(OpCodes.Brfalse_S, Skip),
                 new(OpCodes.Ldc_R4,    Plugin.Instance.Config.WearingTime),
                 new(OpCodes.Br_S ,     Skip2)

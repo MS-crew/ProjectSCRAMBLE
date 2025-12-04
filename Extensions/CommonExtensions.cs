@@ -10,11 +10,5 @@ namespace ProjectSCRAMBLE.Extensions
         { 
            return ((int)Float).ToString(); 
         }
-
-        internal static void PatchSingleType(this Harmony harmony, Type patchClass)
-        {
-            PatchClassProcessor processor = new(harmony, patchClass);
-            processor.Patch();
-        }
     }
 }

@@ -125,9 +125,7 @@
     <Compile Include="Extensions\CommonExtensions.cs" />
     <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="Methods\Methods.cs" />
-    <Compile Include="Patchs\BlockBadEffect.cs" />
-    <Compile Include="Patchs\BlockForceDrop.cs" />
-    <Compile Include="Patchs\SetWearOffTime.cs" />
+    <Compile Include="Patchs\ServerUpdateDeactivatingPatch.cs" />
     <Compile Include="Patchs\SetWearingTime.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="ProjectSCRAMBLE.cs" />

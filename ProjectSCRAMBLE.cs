@@ -16,6 +16,7 @@ using MEC;
 
 using PlayerRoles.FirstPersonControl.Thirdperson.Subcontrollers.Wearables;
 
+using ProjectSCRAMBLE.Configs;
 using ProjectSCRAMBLE.Extensions;
 using ProjectSCRAMBLE.Patchs;
 
@@ -69,8 +70,8 @@ namespace ProjectSCRAMBLE
         protected override void SubscribeEvents()
         {
             Scp96Event.AddingTarget += OnAddingTarget;
-            Scp1344event.ChangedStatus += OnChangedStatus; 
-            BlockBadEffect.OnProjectScrambleWearOff += DisableScramble;
+            Scp1344event.ChangedStatus += OnChangedStatus;
+            ServerUpdateDeactivatingPatch.OnProjectScrambleWearOff += DisableScramble;
 
             base.SubscribeEvents();
         }
@@ -78,8 +79,8 @@ namespace ProjectSCRAMBLE
         protected override void UnsubscribeEvents()
         {
             Scp96Event.AddingTarget -= OnAddingTarget;
-            Scp1344event.ChangedStatus -= OnChangedStatus; 
-            BlockBadEffect.OnProjectScrambleWearOff -= DisableScramble;
+            Scp1344event.ChangedStatus -= OnChangedStatus;
+            ServerUpdateDeactivatingPatch.OnProjectScrambleWearOff -= DisableScramble;
 
             base.UnsubscribeEvents();
         }

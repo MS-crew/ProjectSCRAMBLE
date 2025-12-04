@@ -2,7 +2,7 @@
 using Exiled.API.Interfaces;
 using System.ComponentModel;
 
-namespace ProjectSCRAMBLE
+namespace ProjectSCRAMBLE.Configs
 {
     public class Config : IConfig
     {

@@ -1,6 +1,6 @@
 ﻿using Exiled.API.Interfaces;
 
-namespace ProjectSCRAMBLE
+namespace ProjectSCRAMBLE.Configs
 {
     public class Translation : ITranslation
     {

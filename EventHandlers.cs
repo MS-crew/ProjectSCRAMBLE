@@ -75,7 +75,7 @@ namespace ProjectSCRAMBLE
         private void OnChangedRole(SpawnedEventArgs ev)
         {
             if (SCRAMBLE.ActiveScramblePlayers.Contains(ev.Player))
-                BlockBadEffect.WearOffProjectScramble(ev.Player.ReferenceHub);
+                ServerUpdateDeactivatingPatch.WearOffProjectScramble(ev.Player.ReferenceHub);
 
             if (DirtyPlayers.Contains(ev.Player))
             {

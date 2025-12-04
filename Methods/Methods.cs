@@ -17,6 +17,7 @@ using ProjectMER.Features;
 using ProjectMER.Features.Objects;
 #endif
 
+using ProjectSCRAMBLE.Configs;
 using ProjectSCRAMBLE.Extensions;
 
 using UnityEngine;
