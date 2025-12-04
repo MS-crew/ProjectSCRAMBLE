@@ -125,8 +125,11 @@ namespace ProjectSCRAMBLE
                 return;
 
             if (DirtyPickupSerials.Contains(ev.Pickup.Serial))
+            {
                 ev.Pickup.Destroy();
-
+                return;
+            }
+                
             DirtyPickupSerials.Add(ev.Pickup.Serial);
         }
 

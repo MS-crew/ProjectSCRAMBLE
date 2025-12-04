@@ -9,7 +9,7 @@ using static HarmonyLib.AccessTools;
 namespace ProjectSCRAMBLE.Patchs
 {
     [HarmonyPatch(typeof(Scp1344Item), nameof(Scp1344Item.Update))]
-    public static class Scp1344ItemWearingTimePatch
+    public static class WearingTimePatch
     {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {

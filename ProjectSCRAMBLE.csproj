@@ -124,8 +124,9 @@
     <Compile Include="EventHandlers.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Methods.cs" />
+    <Compile Include="Patchs\OnPlayerDisarmedPatch.cs" />
     <Compile Include="Patchs\ServerUpdateDeactivatingPatch.cs" />
-    <Compile Include="Patchs\SetWearingTime.cs" />
+    <Compile Include="Patchs\WearingTimePatch.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="ProjectSCRAMBLE.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
