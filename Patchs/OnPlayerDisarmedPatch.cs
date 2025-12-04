@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-using InventorySystem.Items;
+using InventorySystem;
 using InventorySystem.Items.Usables.Scp1344;
 
 using static ProjectSCRAMBLE.ProjectSCRAMBLE;
@@ -15,10 +15,10 @@ namespace ProjectSCRAMBLE.Patchs
             if (!SCRAMBLE.TrackedSerials.Contains(__instance.ItemSerial))
                 return true;
 
-            if (__instance is not ItemBase itemBase)
+            if (__instance.Owner != targetHub)
                 return true;
 
-            itemBase.ServerDropItem(true);
+            __instance.Owner.inventory.ServerDropItem(__instance.ItemSerial);
             ServerUpdateDeactivatingPatch.WearOffProjectScramble(targetHub);
             return false;
         }

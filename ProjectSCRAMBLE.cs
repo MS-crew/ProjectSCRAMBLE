@@ -278,10 +278,9 @@ namespace ProjectSCRAMBLE
         {
             Player player = Player.Get(hub);
 
+            player.DisableEffect(EffectType.Blinded);
             player.ReferenceHub.DisableWearables(WearableElements.Scp1344Goggles);
-            if (Plugin.Instance.Config.SimulateTemporaryDarkness)
-                player.DisableEffect(EffectType.Blinded);
-
+            
             DeObfuscateScp96s(player); 
             player.RemoveSCRAMBLEHint();
             ActiveScramblePlayers.Remove(player);
