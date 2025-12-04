@@ -17,18 +17,20 @@ using ProjectSCRAMBLE.Patchs;
 using ProjectMER.Features.Objects;
 #endif
 
-
+using MapEvent = Exiled.Events.Handlers.Map;
 using PlayerEvent = Exiled.Events.Handlers.Player;
 using ServerEvent = Exiled.Events.Handlers.Server;
 
 using static ProjectSCRAMBLE.Methods;
 using static ProjectSCRAMBLE.ProjectSCRAMBLE;
+using Exiled.Events.EventArgs.Map;
 
 namespace ProjectSCRAMBLE
 {
     public class EventHandlers
     {
         public HashSet<Player> DirtyPlayers { get; set; } = [];
+        public HashSet<ushort> DirtyPickupSerials { get; set; } = [];
 
         public void Subscribe()
         {
@@ -37,6 +39,9 @@ namespace ProjectSCRAMBLE
             PlayerEvent.Verified += OnVerified;
             PlayerEvent.Spawned += OnChangedRole; 
             PlayerEvent.ChangingSpectatedPlayer += OnChangingSpectatedPlayer;
+
+            MapEvent.PickupAdded += OnPickupAdded;
+            MapEvent.PickupDestroyed += OnPickupDestroyed;
         }
 
         public void Unsubscribe()
@@ -46,12 +51,16 @@ namespace ProjectSCRAMBLE
             PlayerEvent.Verified -= OnVerified;
             PlayerEvent.Spawned -= OnChangedRole; 
             PlayerEvent.ChangingSpectatedPlayer -= OnChangingSpectatedPlayer;
+
+            MapEvent.PickupAdded -= OnPickupAdded;
+            MapEvent.PickupDestroyed -= OnPickupDestroyed;
         }
 
         private void OnWaitingforPlayers()
         {
             DirtyPlayers.Clear();
             Scp96Censors.Clear();
+            DirtyPickupSerials.Clear();
 
             foreach (HashSet<CoroutineHandle> handles in Coroutines.Values)
             {
@@ -108,6 +117,23 @@ namespace ProjectSCRAMBLE
                 SCRAMBLE.ObfuscateScp96s(ev.Player);
                 DirtyPlayers.Add(ev.Player);
             }
+        }
+
+        private void OnPickupAdded(PickupAddedEventArgs ev)
+        {
+            if (!SCRAMBLE.Check(ev.Pickup))
+                return;
+
+            if (DirtyPickupSerials.Contains(ev.Pickup.Serial))
+                ev.Pickup.Destroy();
+
+            DirtyPickupSerials.Add(ev.Pickup.Serial);
+        }
+
+        private void OnPickupDestroyed(PickupDestroyedEventArgs ev)
+        {
+            if (DirtyPickupSerials.Contains(ev.Pickup.Serial))
+                DirtyPickupSerials.Remove(ev.Pickup.Serial);
         }
     }
 }
