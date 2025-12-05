@@ -124,6 +124,7 @@
     <Compile Include="EventHandlers.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Methods.cs" />
+    <Compile Include="Patchs\CanStartUsingPatch.cs" />
     <Compile Include="Patchs\OnPlayerDisarmedPatch.cs" />
     <Compile Include="Patchs\ServerUpdateDeactivatingPatch.cs" />
     <Compile Include="Patchs\WearingTimePatch.cs" />

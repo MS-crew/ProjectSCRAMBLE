@@ -31,8 +31,8 @@ namespace ProjectSCRAMBLE.Patchs
                 const int offset = -1;
                 int index = NewCodes.FindLastIndex(code => code.Calls(Method(typeof(Scp1344Item), nameof(Scp1344Item.ActivateFinalEffects)))) + offset;
 
-                NewCodes[index].labels.Add(Skip);
                 jumpLabels = NewCodes[index].ExtractLabels();
+                NewCodes[index].labels.Add(Skip);
 
                 NewCodes.InsertRange(index,
                 [
