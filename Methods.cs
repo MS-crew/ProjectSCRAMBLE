@@ -14,6 +14,7 @@ using PlayerRoles;
 
 #if PMER
 using ProjectMER.Features;
+using ProjectMER.Features.Extensions;
 using ProjectMER.Features.Objects;
 #endif
 
@@ -53,7 +54,10 @@ namespace ProjectSCRAMBLE
                 return;
             }
 
-            Censor.transform.SetParent(player.Transform, false);
+            Censor.transform.SetParent(player.Transform, true);
+
+            if (config.AttachCensorToHead && !Coroutines.ContainsKey(player))
+                Coroutines[player] = [];
 
             if (config.AttachCensorToHead)
                 Coroutines[player].Add(Timing.RunCoroutine(TrackHead(Censor.transform, head, config.AttachToHeadsyncInterval)));
@@ -66,7 +70,7 @@ namespace ProjectSCRAMBLE
                 rotation: head.rotation.eulerAngles, scale: config.CensorScale, spawn: true, color: config.CensorColor);
 
             Censor.MovementSmoothing = 0;
-            Censor.Transform.SetParent(player.Transform, false);
+            Censor.Transform.SetParent(player.Transform, true);
 
             if ((config.AttachCensorToHead || config.CensorRotate) && !Coroutines.ContainsKey(player))
                 Coroutines[player] = []; 
