@@ -18,7 +18,6 @@ using PlayerRoles.FirstPersonControl.Thirdperson.Subcontrollers.Wearables;
 
 using ProjectSCRAMBLE.Configs;
 using ProjectSCRAMBLE.Extensions;
-using ProjectSCRAMBLE.Patchs;
 
 using UnityEngine;
 
@@ -34,6 +33,9 @@ namespace ProjectSCRAMBLE
     [CustomItem(ItemType.SCP1344)]
     public class ProjectSCRAMBLE : CustomItem
     {
+        internal static event System.Action<ReferenceHub> OnProjectScrambleWearOff;
+        internal static void WearOffProjectScramble(ReferenceHub hub) => OnProjectScrambleWearOff?.Invoke(hub);
+
         internal static ProjectSCRAMBLE SCRAMBLE { get; set; }
 
         [YamlIgnore]
@@ -48,7 +50,6 @@ namespace ProjectSCRAMBLE
 
         public override string Name { get; set; } = "Project SCRAMBLE";
 
-        [YamlIgnore]
         public override ItemType Type { get; set; } = ItemType.SCP1344;
 
         public override SpawnProperties SpawnProperties { get; set; } = new SpawnProperties();
@@ -71,7 +72,7 @@ namespace ProjectSCRAMBLE
         {
             Scp96Event.AddingTarget += OnAddingTarget;
             Scp1344event.ChangedStatus += OnChangedStatus;
-            ServerUpdateDeactivatingPatch.OnProjectScrambleWearOff += DisableScramble;
+            OnProjectScrambleWearOff += DisableScramble;
 
             base.SubscribeEvents();
         }
@@ -80,7 +81,7 @@ namespace ProjectSCRAMBLE
         {
             Scp96Event.AddingTarget -= OnAddingTarget;
             Scp1344event.ChangedStatus -= OnChangedStatus;
-            ServerUpdateDeactivatingPatch.OnProjectScrambleWearOff -= DisableScramble;
+            OnProjectScrambleWearOff -= DisableScramble;
 
             base.UnsubscribeEvents();
         }
@@ -136,6 +137,9 @@ namespace ProjectSCRAMBLE
         private void OnChangedStatus(ChangedStatusEventArgs ev)
         {
             if (!Check(ev.Item))
+                return;
+
+            if (ev.Player.IsHost)
                 return;
 
             if (ev.Scp1344Status != Scp1344Status.Active)

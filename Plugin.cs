@@ -23,9 +23,9 @@ namespace ProjectSCRAMBLE
 
         public override string Prefix { get; } = "ProjectSCRAMBLE";
 
-        public override Version Version { get; } = new Version(1, 4, 1);
+        public override Version Version { get; } = new Version(1, 4, 2);
 
-        public override Version RequiredExiledVersion { get; } = new Version(9, 10, 0);
+        public override Version RequiredExiledVersion { get; } = new Version(9, 12, 0);
 
         public override void OnEnabled()
         {

@@ -11,19 +11,11 @@ using ProjectSCRAMBLE.Extensions;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs.Player;
 
-using ProjectSCRAMBLE.Patchs;
-
-#if PMER
-using ProjectMER.Features.Objects;
-#endif
-
-using MapEvent = Exiled.Events.Handlers.Map;
 using PlayerEvent = Exiled.Events.Handlers.Player;
 using ServerEvent = Exiled.Events.Handlers.Server;
 
 using static ProjectSCRAMBLE.Methods;
 using static ProjectSCRAMBLE.ProjectSCRAMBLE;
-using Exiled.Events.EventArgs.Map;
 
 namespace ProjectSCRAMBLE
 {
@@ -39,9 +31,6 @@ namespace ProjectSCRAMBLE
             PlayerEvent.Verified += OnVerified;
             PlayerEvent.Spawned += OnChangedRole; 
             PlayerEvent.ChangingSpectatedPlayer += OnChangingSpectatedPlayer;
-
-            MapEvent.PickupAdded += OnPickupAdded;
-            MapEvent.PickupDestroyed += OnPickupDestroyed;
         }
 
         public void Unsubscribe()
@@ -51,9 +40,6 @@ namespace ProjectSCRAMBLE
             PlayerEvent.Verified -= OnVerified;
             PlayerEvent.Spawned -= OnChangedRole; 
             PlayerEvent.ChangingSpectatedPlayer -= OnChangingSpectatedPlayer;
-
-            MapEvent.PickupAdded -= OnPickupAdded;
-            MapEvent.PickupDestroyed -= OnPickupDestroyed;
         }
 
         private void OnWaitingforPlayers()
@@ -84,7 +70,7 @@ namespace ProjectSCRAMBLE
         private void OnChangedRole(SpawnedEventArgs ev)
         {
             if (SCRAMBLE.ActiveScramblePlayers.Contains(ev.Player))
-                ServerUpdateDeactivatingPatch.WearOffProjectScramble(ev.Player.ReferenceHub);
+                WearOffProjectScramble(ev.Player.ReferenceHub);
 
             if (DirtyPlayers.Contains(ev.Player))
             {
@@ -117,26 +103,6 @@ namespace ProjectSCRAMBLE
                 SCRAMBLE.ObfuscateScp96s(ev.Player);
                 DirtyPlayers.Add(ev.Player);
             }
-        }
-
-        private void OnPickupAdded(PickupAddedEventArgs ev)
-        {
-            if (!SCRAMBLE.Check(ev.Pickup))
-                return;
-
-            if (DirtyPickupSerials.Contains(ev.Pickup.Serial))
-            {
-                ev.Pickup.Destroy();
-                return;
-            }
-                
-            DirtyPickupSerials.Add(ev.Pickup.Serial);
-        }
-
-        private void OnPickupDestroyed(PickupDestroyedEventArgs ev)
-        {
-            if (DirtyPickupSerials.Contains(ev.Pickup.Serial))
-                DirtyPickupSerials.Remove(ev.Pickup.Serial);
         }
     }
 }
