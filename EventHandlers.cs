@@ -22,7 +22,6 @@ namespace ProjectSCRAMBLE
     public class EventHandlers
     {
         public HashSet<Player> DirtyPlayers { get; set; } = [];
-        public HashSet<ushort> DirtyPickupSerials { get; set; } = [];
 
         public void Subscribe()
         {
