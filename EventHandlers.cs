@@ -1,26 +1,30 @@
 ﻿using System.Collections.Generic;
 
-using MEC;
+using Exiled.API.Features;
+using Exiled.Events.EventArgs.Map;
+using Exiled.Events.EventArgs.Player;
 
-using UnityEngine;
+using MEC;
 
 using PlayerRoles;
 
 using ProjectSCRAMBLE.Extensions;
 
-using Exiled.API.Features;
-using Exiled.Events.EventArgs.Player;
-
-using PlayerEvent = Exiled.Events.Handlers.Player;
-using ServerEvent = Exiled.Events.Handlers.Server;
+using UnityEngine;
 
 using static ProjectSCRAMBLE.Methods;
 using static ProjectSCRAMBLE.ProjectSCRAMBLE;
+
+using MapEvent = Exiled.Events.Handlers.Map;
+using PlayerEvent = Exiled.Events.Handlers.Player;
+using ServerEvent = Exiled.Events.Handlers.Server;
 
 namespace ProjectSCRAMBLE
 {
     public class EventHandlers
     {
+        private readonly HashSet<ushort> dirtyPickupSerials = [];
+
         public HashSet<Player> DirtyPlayers { get; set; } = [];
 
         public void Subscribe()
@@ -30,6 +34,9 @@ namespace ProjectSCRAMBLE
             PlayerEvent.Verified += OnVerified;
             PlayerEvent.Spawned += OnChangedRole; 
             PlayerEvent.ChangingSpectatedPlayer += OnChangingSpectatedPlayer;
+
+            MapEvent.PickupAdded += OnPickupAdded;
+            MapEvent.PickupDestroyed += OnPickupDestroyed;
         }
 
         public void Unsubscribe()
@@ -39,13 +46,16 @@ namespace ProjectSCRAMBLE
             PlayerEvent.Verified -= OnVerified;
             PlayerEvent.Spawned -= OnChangedRole; 
             PlayerEvent.ChangingSpectatedPlayer -= OnChangingSpectatedPlayer;
+
+            MapEvent.PickupAdded -= OnPickupAdded;
+            MapEvent.PickupDestroyed -= OnPickupDestroyed;
         }
 
         private void OnWaitingforPlayers()
         {
             DirtyPlayers.Clear();
             Scp96Censors.Clear();
-            DirtyPickupSerials.Clear();
+            dirtyPickupSerials.Clear();
 
             foreach (HashSet<CoroutineHandle> handles in Coroutines.Values)
             {
@@ -102,6 +112,26 @@ namespace ProjectSCRAMBLE
                 SCRAMBLE.ObfuscateScp96s(ev.Player);
                 DirtyPlayers.Add(ev.Player);
             }
+        }
+
+        private void OnPickupAdded(PickupAddedEventArgs ev)
+        {
+            if (!SCRAMBLE.Check(ev.Pickup))
+                return;
+
+            if (dirtyPickupSerials.Contains(ev.Pickup.Serial))
+            {
+                ev.Pickup.Destroy();
+                return;
+            }
+
+            dirtyPickupSerials.Add(ev.Pickup.Serial);
+        }
+
+        private void OnPickupDestroyed(PickupDestroyedEventArgs ev)
+        {
+            if (dirtyPickupSerials.Contains(ev.Pickup.Serial))
+                dirtyPickupSerials.Remove(ev.Pickup.Serial);
         }
     }
 }

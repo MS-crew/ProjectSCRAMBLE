@@ -145,6 +145,9 @@ namespace ProjectSCRAMBLE
             if (ev.Scp1344Status != Scp1344Status.Active)
                 return;
 
+            if (ActiveScramblePlayers.Contains(ev.Player))
+                return;
+
             if (Plugin.Instance.Config.ScrambleCharge)
             {
                 ushort serial = ev.Item.Serial;
@@ -281,6 +284,9 @@ namespace ProjectSCRAMBLE
         private void DisableScramble(ReferenceHub hub)
         {
             Player player = Player.Get(hub);
+
+            if (!ActiveScramblePlayers.Contains(player))
+                return;
 
             player.DisableEffect(EffectType.Blinded);
             player.ReferenceHub.DisableWearables(WearableElements.Scp1344Goggles);
