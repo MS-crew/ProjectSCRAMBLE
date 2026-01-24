@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System.ComponentModel;
+
 using Exiled.API.Interfaces;
-using System.ComponentModel;
+
+using UnityEngine;
 
 namespace ProjectSCRAMBLE.Configs
 {
@@ -8,11 +10,6 @@ namespace ProjectSCRAMBLE.Configs
     {
         public bool IsEnabled { get; set; } = true;
         public bool Debug { get; set; } = false;
-
-        public bool CanWearOff { get; set; } = true;
-
-        [Description("If you remove the original effect, simulate the temporary darkness when wearing the glasses")]
-        public bool SimulateTemporaryDarkness { get; set; } = true;
 
         [Description("Should there be a Random error in the artificial intelligence of the glasses?")]
         public bool RandomError { get; set; } = false;
@@ -48,15 +45,6 @@ namespace ProjectSCRAMBLE.Configs
 
         [Description("Censor scale")]
         public Vector3 CensorScale { get; set; } = Vector3.one * 0.5f;
-
-
-        [Description("Wearing time (default 5)")]
-        public float WearingTime { get; set; } = 1f;
-
-
-        [Description("Removal time (default 5.1)")]
-        public float WearingOffTime { get; set; } = 1f;
-
 
         [Description("Custom item settings")]
         public ProjectSCRAMBLE ProjectSCRAMBLE { get; set; } = new ProjectSCRAMBLE();

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 
 using Exiled.API.Features;
-using Exiled.Events.EventArgs.Map;
 using Exiled.Events.EventArgs.Player;
 
 using MEC;
@@ -12,19 +11,16 @@ using ProjectSCRAMBLE.Extensions;
 
 using UnityEngine;
 
-using static ProjectSCRAMBLE.Methods;
-using static ProjectSCRAMBLE.ProjectSCRAMBLE;
-
-using MapEvent = Exiled.Events.Handlers.Map;
 using PlayerEvent = Exiled.Events.Handlers.Player;
 using ServerEvent = Exiled.Events.Handlers.Server;
+
+using static ProjectSCRAMBLE.Methods;
+using static ProjectSCRAMBLE.ProjectSCRAMBLE;
 
 namespace ProjectSCRAMBLE
 {
     public class EventHandlers
     {
-        private readonly HashSet<ushort> dirtyPickupSerials = [];
-
         public HashSet<Player> DirtyPlayers { get; set; } = [];
 
         public void Subscribe()
@@ -34,9 +30,6 @@ namespace ProjectSCRAMBLE
             PlayerEvent.Verified += OnVerified;
             PlayerEvent.Spawned += OnChangedRole; 
             PlayerEvent.ChangingSpectatedPlayer += OnChangingSpectatedPlayer;
-
-            MapEvent.PickupAdded += OnPickupAdded;
-            MapEvent.PickupDestroyed += OnPickupDestroyed;
         }
 
         public void Unsubscribe()
@@ -46,16 +39,12 @@ namespace ProjectSCRAMBLE
             PlayerEvent.Verified -= OnVerified;
             PlayerEvent.Spawned -= OnChangedRole; 
             PlayerEvent.ChangingSpectatedPlayer -= OnChangingSpectatedPlayer;
-
-            MapEvent.PickupAdded -= OnPickupAdded;
-            MapEvent.PickupDestroyed -= OnPickupDestroyed;
         }
 
         private void OnWaitingforPlayers()
         {
             DirtyPlayers.Clear();
             Scp96Censors.Clear();
-            dirtyPickupSerials.Clear();
 
             foreach (HashSet<CoroutineHandle> handles in Coroutines.Values)
             {
@@ -78,9 +67,6 @@ namespace ProjectSCRAMBLE
 
         private void OnChangedRole(SpawnedEventArgs ev)
         {
-            if (SCRAMBLE.ActiveScramblePlayers.Contains(ev.Player))
-                WearOffProjectScramble(ev.Player.ReferenceHub);
-
             if (DirtyPlayers.Contains(ev.Player))
             {
                 SCRAMBLE.DeObfuscateScp96s(ev.Player);
@@ -112,26 +98,6 @@ namespace ProjectSCRAMBLE
                 SCRAMBLE.ObfuscateScp96s(ev.Player);
                 DirtyPlayers.Add(ev.Player);
             }
-        }
-
-        private void OnPickupAdded(PickupAddedEventArgs ev)
-        {
-            if (!SCRAMBLE.Check(ev.Pickup))
-                return;
-
-            if (dirtyPickupSerials.Contains(ev.Pickup.Serial))
-            {
-                ev.Pickup.Destroy();
-                return;
-            }
-
-            dirtyPickupSerials.Add(ev.Pickup.Serial);
-        }
-
-        private void OnPickupDestroyed(PickupDestroyedEventArgs ev)
-        {
-            if (dirtyPickupSerials.Contains(ev.Pickup.Serial))
-                dirtyPickupSerials.Remove(ev.Pickup.Serial);
         }
     }
 }
