@@ -7,6 +7,9 @@ using PlayerRoles.PlayableScps.Scp096;
 
 using UnityEngine;
 
+using Scp096Role = Exiled.API.Features.Roles.Scp096Role;
+
+
 #if RUEI
 using RueI.API;
 using RueI.API.Elements;
