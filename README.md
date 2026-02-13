@@ -29,38 +29,43 @@ This is the initial release of the plugin. We welcome any feedback, bug reports,
 - **Contact:** [discerrahidenetim@gmail.com](mailto:discerrahidenetim@gmail.com)
 
 Thank you for using our plugin and helping us improve it!
-## Default Config
+## Default Config FOR RUEI VERSION
 ```yml
 is_enabled: true
 debug: false
-# Whether to remove the main 1344 effect when using SCRAMBLES
-remove_orginal1344_effect: true
-# If you remove the original effect, simulate the temporary darkness when wearing the glasses
-simulate_temporary_darkness: true
+# Should there be a Random error in the artificial intelligence of the glasses?
+random_error: false
+# Random error chance
+random_error_chance: 0.00100000005
 # Whether the SCRAMBLES will use charge while blocking SCP-096 face
 scramble_charge: true
 # How much power should the SCRAMBLEs use to obfuscate 96's face? (1 = default, >1 = faster, <1 = slower)
 charge_usage_multiplayer: 1
-# Attach to head or Directl attach to player
+# Attach to head or Directly attach to player
 attach_censor_to_head: true
 # 0.1 is okey, 0.01 better/good , 0.001 greater
-attach_to_headsync_interval: 0.01
-# Censor schematic name
-censor_schematic: 'Censormain'
-# Censor schematic scale
-censor_schematic_scale:
+attach_to_headsync_interval: 0.00999999978
+# Censor type as primitive
+censor_type: Cube
+# Rotate censor randomly
+censor_rotate: true
+# Censor Color
+censor_color:
+  r: 0
+  g: 0
+  b: 0
+  a: 1
+# Censor scale
+censor_scale:
   x: 0.5
   y: 0.5
   z: 0.5
-# Wearing time (default 5)
-activate_time: 1
-# Removal time (default 5.1)
-deactivate_time: 1
 # Custom item settings
 project_s_c_r_a_m_b_l_e:
-  can_wear_off: true
   id: 1730
   weight: 1
+  wearing_time: 1
+  removing_time: 1
   name: 'Project SCRAMBLE'
   spawn_properties:
     limit: 0
@@ -70,15 +75,14 @@ project_s_c_r_a_m_b_l_e:
     room_spawn_points: []
     locker_spawn_points: []
   description: 'An artificial intelligence Visor that censors SCP-096''s face'
+  type: SCP1344
+  remove1344_effect: true
+  can_be_remove_safely: true
   scale:
     x: 1
     y: 1
     z: 1
 # Hint settings
 hint:
-  x_cordinate: 370
   y_cordinate: 90
-  font_size: 20
-  # 0 = left , 1 = right, 2 = center
-  alligment: 0
 ```
