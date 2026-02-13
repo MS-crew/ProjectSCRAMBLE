@@ -9,7 +9,6 @@ using UnityEngine;
 
 using Scp096Role = Exiled.API.Features.Roles.Scp096Role;
 
-
 #if RUEI
 using RueI.API;
 using RueI.API.Elements;
@@ -23,8 +22,6 @@ using HintServiceMeow.Core.Utilities;
 #if PMER
 using ProjectMER.Features;
 using ProjectMER.Features.Objects;
-
-using Scp096Role = Exiled.API.Features.Roles.Scp096Role;
 #endif
 
 namespace ProjectSCRAMBLE.Extensions
