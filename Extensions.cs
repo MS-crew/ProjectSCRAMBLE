@@ -98,11 +98,11 @@ namespace ProjectSCRAMBLE.Extensions
                 return;
             }
 
-            Server.SendSpawnMessage.Invoke(null, [identity, player.Connection]);
+            NetworkServer.SendSpawnMessage(identity, player.Connection);
 #if PMER
             foreach (NetworkIdentity netIdentity in networkedObject.GetComponentsInChildren<NetworkIdentity>(true))
             {
-                Server.SendSpawnMessage.Invoke(null, [netIdentity, player.Connection]);
+                NetworkServer.SendSpawnMessage(netIdentity, player.Connection);
             }
 #endif
         }
