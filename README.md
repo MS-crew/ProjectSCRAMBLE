@@ -20,7 +20,7 @@ Project SCRAMBLE was a project conducted by the SCP Foundation that aimed to cre
 
 ## Dependicies
 - ProjectMER [here](https://github.com/Michal78900/ProjectMER)
-- HintServiceMeow [here](https://github.com/MeowServer/HintServiceMeow)
+- HintServiceMeow [here](https://github.com/MeowServer/HintServiceMeow) or Ruei [here](https://github.com/pawslee/Ruei)
 ## Feedback and Issues
 
 This is the initial release of the plugin. We welcome any feedback, bug reports, or suggestions for improvements.
