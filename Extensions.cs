@@ -20,6 +20,8 @@ using HintServiceMeow.Core.Utilities;
 #if PMER
 using ProjectMER.Features;
 using ProjectMER.Features.Objects;
+
+using Scp096Role = Exiled.API.Features.Roles.Scp096Role;
 #endif
 
 namespace ProjectSCRAMBLE.Extensions
@@ -74,19 +76,13 @@ namespace ProjectSCRAMBLE.Extensions
         {
             headTransform = null;
 
-            if (player.Role is not FpcRole fpc)
+            if (player.Role is not Scp096Role scp96Role)
             {
-                Log.Debug("This 96 role is not have first person control.");
+                Log.Debug("This is not 96 role.");
                 return false;
             }
 
-            if (fpc.Model is not Scp096CharacterModel scp96AnimatedCharacterModel)
-            {
-                Log.Debug("This 96 role doesnt have Scp096CharacterModel.");
-                return false;
-            }
-
-            headTransform = scp96AnimatedCharacterModel.Head;
+            headTransform = scp96Role.HeadTransform;
             return headTransform != null;
         }
 
