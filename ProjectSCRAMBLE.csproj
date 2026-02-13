@@ -84,7 +84,7 @@
       <HintPath>$(EXILED_REFERENCES)\HintServiceMeow-Exiled.dll</HintPath>
     </Reference>
     <Reference Include="Mirror-publicized">
-      <HintPath>..\..\..\EXILED_REFERENCES\Mirror-publicized.dll</HintPath>
+      <HintPath>$(EXILED_REFERENCES)\Mirror-publicized.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Pooling, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -114,7 +114,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\..\EXILED_REFERENCES\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>$(EXILED_REFERENCES)\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
