@@ -3,7 +3,7 @@
 <a href="https://github.com/MS-crew/ProjectSCRAMBLE/releases"><img src="https://img.shields.io/github/downloads/MS-crew/ProjectSCRAMBLE/total?style=for-the-badge&logo=githubactions&label=Downloads" href="https://github.com/MS-crew/ProjectSCRAMBLE/releases" alt="GitHub Release Download"></a>
 <a href="https://github.com/MS-crew/ProjectSCRAMBLE/releases"><img src="https://img.shields.io/badge/Build-1.5.0-brightgreen?style=for-the-badge&logo=gitbook" href="https://github.com/MS-crew/ProjectSCRAMBLE/releases" alt="GitHub Releases"></a>
 <a href="https://github.com/MS-crew/ProjectSCRAMBLE/blob/master/LICENSE.txt"><img src="https://img.shields.io/badge/Licence-GPL_3.0-blue?style=for-the-badge&logo=gitbook" href="https://github.com/MS-crew/ProjectSCRAMBLE/blob/master/LICENSE.txt" alt="General Public License v3.0"></a>
-<a href="https://github.com/ExMod-Team/EXILED"><img src="https://img.shields.io/badge/Exiled-9.6.0-red?style=for-the-badge&logo=gitbook" href="https://github.com/ExMod-Team/EXILED" alt="GitHub Exiled"></a>
+<a href="https://github.com/ExMod-Team/EXILED"><img src="https://img.shields.io/badge/Exiled-9.13.0-red?style=for-the-badge&logo=gitbook" href="https://github.com/ExMod-Team/EXILED" alt="GitHub Exiled"></a>
 
 
 Project SCRAMBLE was a project conducted by the SCP Foundation that aimed to create the SCRAMBLE Visor Unit, an eyepiece that would allow for Foundation units to view SCP-096's face without worry of triggering its response. This visor utilized SCRAMBLE, a program that utilizes a microprocessor within the visor to analyze the viewing field for the facial features of SCP-096. Upon recognition, it would immediately obfuscate the image before the light reaches the human eye.
